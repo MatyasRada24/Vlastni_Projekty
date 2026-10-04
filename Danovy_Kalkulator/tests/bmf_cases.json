@@ -1,0 +1,1029 @@
+{
+  "source": "https://www.bmf-steuerrechner.de/interface/2026Version1.xhtml?code=LSt2026ext&",
+  "verified": "2026-10-02",
+  "cases": [
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "8816",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "554912",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"200001\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"8816\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"554912\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "52450",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2471400",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"400000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"52450\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"2471400\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "101141",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4208100",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"581250\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"101141\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"4208100\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "198175",
+        "SOLZLZZ": "3402",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "7078700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"845000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"198175\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"3402\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"7078700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "473275",
+        "SOLZLZZ": "26030",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "14938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"1500000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"473275\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"26030\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"14938700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1119250",
+        "SOLZLZZ": "61558",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "32938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"3000000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"1119250\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"61558\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"32938700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1625",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "128912",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"200001\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"1625\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"128912\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "41833",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2045400",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"400000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"41833\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"2045400\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "88391",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "3782100",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"581250\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"88391\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"3782100\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "183258",
+        "SOLZLZZ": "1627",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "6652700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"845000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"183258\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"1627\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"6652700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "458358",
+        "SOLZLZZ": "25209",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "14512700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"1500000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"458358\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"25209\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"14512700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1103275",
+        "SOLZLZZ": "60680",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "32512700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"3000000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"1103275\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"60680\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"32512700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "0",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "554912",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"200001\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"3\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"554912\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "20183",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2471400",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"400000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"3\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"20183\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"2471400\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "57416",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4208100",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"581250\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"3\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"57416\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"4208100\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "128483",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "7078700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"845000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"3\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"128483\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"7078700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "380466",
+        "SOLZLZZ": "4914",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "14938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"1500000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"3\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"380466\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"4914\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"14938700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1010466",
+        "SOLZLZZ": "55575",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "32938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"3000000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"3\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"1010466\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"55575\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"32938700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "8816",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "554912",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"200001\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"4\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"8816\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"554912\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "52450",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2471400",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"400000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"4\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"52450\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"2471400\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "101141",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4208100",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"581250\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"4\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"101141\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"4208100\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "198175",
+        "SOLZLZZ": "3402",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "7078700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"845000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"4\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"198175\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"3402\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"7078700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "473275",
+        "SOLZLZZ": "26030",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "14938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"1500000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"4\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"473275\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"26030\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"14938700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1119250",
+        "SOLZLZZ": "61558",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "32938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"3000000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"4\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"1119250\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"61558\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"32938700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "29791",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "554912",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"200001\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"5\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"29791\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"554912\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "94491",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2471400",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"400000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"5\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"94491\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"2471400\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "155275",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4208100",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"581250\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"5\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"155275\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"4208100\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "255750",
+        "SOLZLZZ": "10253",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "7078700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"845000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"5\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"255750\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"10253\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"7078700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "530850",
+        "SOLZLZZ": "29196",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "14938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"1500000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"5\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"530850\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"29196\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"14938700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1190708",
+        "SOLZLZZ": "65488",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "32938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"3000000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"5\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"1190708\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"65488\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"32938700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "34225",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "681512",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"200001\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"6\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"34225\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"681512\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "98925",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2598000",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"400000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"6\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"98925\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"2598000\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "159708",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4334700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"581250\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"6\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"159708\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"4334700\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "260183",
+        "SOLZLZZ": "10781",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "7205300",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"845000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"6\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"260183\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"10781\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"7205300\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "535283",
+        "SOLZLZZ": "29440",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "15065300",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"1500000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"6\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"535283\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"29440\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"15065300\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1195458",
+        "SOLZLZZ": "65750",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "33065300",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"3000000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"6\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"1195458\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"65750\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"33065300\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 0,
+        "STKL": 4,
+        "RE4": 555555,
+        "af": 1,
+        "f": "0.823",
+        "R": 1,
+        "ZKF": "1.5",
+        "PVS": 1,
+        "PVA": 2
+      },
+      "expected": {
+        "BK": "60708",
+        "BKS": "0",
+        "LSTLZZ": "78100",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4001860",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"555555\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"4\" status=\"ok\"/>\n        <eingabe name=\"AF\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"F\" value=\"0.823\" status=\"ok\"/>\n        <eingabe name=\"PVS\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n        <eingabe name=\"R\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"ZKF\" value=\"1.5\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"0\" status=\"ok\"/>\n        <eingabe name=\"PVA\" value=\"2\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"60708\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"78100\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"4001860\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.69",
+        "PVZ": 0,
+        "STKL": 1,
+        "RE4": 612345,
+        "R": 1,
+        "ZKF": "0.5",
+        "PVA": 4
+      },
+      "expected": {
+        "BK": "100216",
+        "BKS": "0",
+        "LSTLZZ": "115408",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4665440",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"612345\" status=\"ok\"/>\n        <eingabe name=\"R\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"ZKF\" value=\"0.5\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"0\" status=\"ok\"/>\n        <eingabe name=\"PVA\" value=\"4\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.69\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"100216\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"115408\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"4665440\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 0,
+        "STKL": 2,
+        "RE4": 350000,
+        "ZKF": 1,
+        "LZZFREIB": 20000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "25666",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "1351500",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"350000\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"ZKF\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"0\" status=\"ok\"/>\n        <eingabe name=\"LZZFREIB\" value=\"20000\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"25666\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"1351500\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 0,
+        "STKL": 3,
+        "RE4": 1000000,
+        "R": 1,
+        "ZKF": 2
+      },
+      "expected": {
+        "BK": "127166",
+        "BKS": "0",
+        "LSTLZZ": "182133",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "8980600",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"1000000\" status=\"ok\"/>\n        <eingabe name=\"R\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"3\" status=\"ok\"/>\n        <eingabe name=\"ZKF\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"0\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"127166\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"182133\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"8980600\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 581251,
+        "R": 1,
+        "PVS": 1
+      },
+      "expected": {
+        "BK": "100075",
+        "BKS": "0",
+        "LSTLZZ": "100075",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4173212",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"581251\" status=\"ok\"/>\n        <eingabe name=\"R\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"PVS\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"2.9\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"100075\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"100075\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"4173212\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": 0,
+        "PVZ": 0,
+        "STKL": 1,
+        "RE4": 300012
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "31000",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "1587044",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<lohnsteuer jahr=\"2026\">\n    <information>Die Berechnung ist nach dem PAP 2026 erfolgt. Die Berechnung dient lediglich der Qualitätssicherung. Die Externe Schnittstelle des Lohn- und Einkommensteuerrechner ist also nur für die Überprüfung ihrer Rechnung bestimmt und nicht dazu bestimmt, die Berechnung über ihn abzuwickeln.</information>\n    <eingaben>\n        <eingabe name=\"RE4\" value=\"300012\" status=\"ok\"/>\n        <eingabe name=\"STKL\" value=\"1\" status=\"ok\"/>\n        <eingabe name=\"PVZ\" value=\"0\" status=\"ok\"/>\n        <eingabe name=\"LZZ\" value=\"2\" status=\"ok\"/>\n        <eingabe name=\"KVZ\" value=\"0\" status=\"ok\"/>\n    </eingaben>\n    <ausgaben>\n        <ausgabe name=\"BK\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"BKS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"LSTLZZ\" value=\"31000\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZLZZ\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"SOLZS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"STS\" value=\"0\" type=\"STANDARD\"/>\n        <ausgabe name=\"VFRB\" value=\"123000\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS1\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"VFRBS2\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRB\" value=\"1587044\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBO\" value=\"0\" type=\"DBA\"/>\n        <ausgabe name=\"WVFRBM\" value=\"0\" type=\"DBA\"/>\n    </ausgaben>\n</lohnsteuer>\n"
+    }
+  ]
+}

@@ -1,0 +1,1031 @@
+{
+  "checked_at": "2026-10-02T18:47:08.268Z",
+  "source": "https://www.bmf-steuerrechner.de/interface/2026Version1.xhtml?code=LSt2026ext&",
+  "remote_xml_sha256": "24df202e5176d7b8cfd9872fa7a4f54a20333277224cdc236c8ad069bcdcff34",
+  "xml_equal_after_line_endings": true,
+  "cases": [
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "8816",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "554912",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "52450",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2471400",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "101141",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4208100",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "198175",
+        "SOLZLZZ": "3402",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "7078700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "473275",
+        "SOLZLZZ": "26030",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "14938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1119250",
+        "SOLZLZZ": "61558",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "32938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1625",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "128912",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "41833",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2045400",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "88391",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "3782100",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "183258",
+        "SOLZLZZ": "1627",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "6652700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "458358",
+        "SOLZLZZ": "25209",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "14512700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 2,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1103275",
+        "SOLZLZZ": "60680",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "32512700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "0",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "554912",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "20183",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2471400",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "57416",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4208100",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "128483",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "7078700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "380466",
+        "SOLZLZZ": "4914",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "14938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 3,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1010466",
+        "SOLZLZZ": "55575",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "32938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "8816",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "554912",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "52450",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2471400",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "101141",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4208100",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "198175",
+        "SOLZLZZ": "3402",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "7078700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "473275",
+        "SOLZLZZ": "26030",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "14938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 4,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1119250",
+        "SOLZLZZ": "61558",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "32938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "29791",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "554912",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "94491",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2471400",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "155275",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4208100",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "255750",
+        "SOLZLZZ": "10253",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "7078700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "530850",
+        "SOLZLZZ": "29196",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "14938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 5,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1190708",
+        "SOLZLZZ": "65488",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "32938700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 200001
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "34225",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "681512",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 400000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "98925",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "2598000",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 581250
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "159708",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4334700",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 845000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "260183",
+        "SOLZLZZ": "10781",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "7205300",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 1500000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "535283",
+        "SOLZLZZ": "29440",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "15065300",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 6,
+        "RE4": 3000000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "1195458",
+        "SOLZLZZ": "65750",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "0",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "33065300",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 0,
+        "STKL": 4,
+        "RE4": 555555,
+        "af": 1,
+        "f": "0.823",
+        "R": 1,
+        "ZKF": "1.5",
+        "PVS": 1,
+        "PVA": 2
+      },
+      "expected": {
+        "BK": "60708",
+        "BKS": "0",
+        "LSTLZZ": "78100",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4001860",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.69",
+        "PVZ": 0,
+        "STKL": 1,
+        "RE4": 612345,
+        "R": 1,
+        "ZKF": "0.5",
+        "PVA": 4
+      },
+      "expected": {
+        "BK": "100216",
+        "BKS": "0",
+        "LSTLZZ": "115408",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4665440",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 0,
+        "STKL": 2,
+        "RE4": 350000,
+        "ZKF": 1,
+        "LZZFREIB": 20000
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "25666",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "1351500",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 0,
+        "STKL": 3,
+        "RE4": 1000000,
+        "R": 1,
+        "ZKF": 2
+      },
+      "expected": {
+        "BK": "127166",
+        "BKS": "0",
+        "LSTLZZ": "182133",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "8980600",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": "2.9",
+        "PVZ": 1,
+        "STKL": 1,
+        "RE4": 581251,
+        "R": 1,
+        "PVS": 1
+      },
+      "expected": {
+        "BK": "100075",
+        "BKS": "0",
+        "LSTLZZ": "100075",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "4173212",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    },
+    {
+      "input": {
+        "LZZ": 2,
+        "KVZ": 0,
+        "PVZ": 0,
+        "STKL": 1,
+        "RE4": 300012
+      },
+      "expected": {
+        "BK": "0",
+        "BKS": "0",
+        "LSTLZZ": "31000",
+        "SOLZLZZ": "0",
+        "SOLZS": "0",
+        "STS": "0",
+        "VFRB": "123000",
+        "VFRBS1": "0",
+        "VFRBS2": "0",
+        "WVFRB": "1587044",
+        "WVFRBO": "0",
+        "WVFRBM": "0"
+      },
+      "differences": []
+    }
+  ]
+}
