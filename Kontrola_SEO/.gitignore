@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+build/
+dist/
+*.spec
+.venv/
+
+# Local credentials and audit data: never publish
+client_secret*.json
+credentials*.json
+*token*.json
+google-secrets.dat*
+.env
+.env.*
+*.pem
+*.key
+*.sqlite*
+*.db
+.test-*/
+exports/
+reports/
