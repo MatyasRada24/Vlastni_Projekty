@@ -1,0 +1,85 @@
+# Lovec nabídek
+
+Lokální aplikace v češtině pro hledání produktů na Bazoši, Aukru a eBay. Zadáš například **rozbitý herní notebook**, nastavíš filtry a agent projde zvolený počet stránek. Zobrazuje skutečně načtené nabídky, odkazy, důvody textové shody a stav každého zdroje. Žádná demonstrační data se nevydávají za živé výsledky.
+
+## Spuštění ve Windows
+
+Vyžaduje Node.js 22.9+ (ověřeno na Node.js 24).
+
+```powershell
+npm.cmd install
+Copy-Item .env.example .env
+npm.cmd start
+```
+
+Otevři **http://127.0.0.1:3210**. Bez klíčů fungují Bazoš, Aukro a lokální plánování podle pravidel. Server je přístupný pouze na tomto počítači. Pro rychlé spuštění po instalaci lze použít `spustit.cmd`.
+
+### AI plánování
+
+Do `.env` doplň `OPENAI_API_KEY`. `OPENAI_MODEL` má výchozí hodnotu `gpt-4.1-mini` a lze jej změnit na dostupný model podporující Responses API a Structured Outputs. Po úpravě restartuj server. Při chybě API aplikace viditelně přepne na pravidla.
+
+AI převádí zadání na kategorii, český/anglický dotaz, skupiny synonym a vyloučené výrazy. Volá se jednou na hledání, pouze se zadáním uživatele. Nástroje pro práci s weby a vlastní filtrování řídí lokální server. AI nemá přístup k souborům, nákupům ani zprávám prodejcům. **Nejde o AI diagnostiku oprav nebo odhad zisku.** Klíč se nikdy neposílá prohlížeči. API může být účtováno poskytovatelem.
+
+Přesnou cenu, lokalitu a další povinné výrazy zadávej do filtrů. První verze nezpracovává číselná omezení RAM, GPU výkonu apod. jako samostatné parametry. Konkrétní model nebo „16 GB“ lze požadovat textovým filtrem; názvosloví prodejců se může lišit.
+
+### eBay
+
+Používá [oficiální Browse API](https://developer.ebay.com/api-docs/buy/static/api-browse.html), marketplace `EBAY_US`, kategorii a anglický dotaz. Pro poškozené zboží používá `conditionIds:{7000}`. Aukce zobrazuje jako aktuální příhoz; u nabídky s možností Buy It Now používá pevnou cenu.
+
+Potřebuje produkční `EBAY_CLIENT_ID` a `EBAY_CLIENT_SECRET` s přístupem k Browse API. Server získá application token přes [OAuth client credentials](https://developer.ebay.com/develop/guides/sell/authorization) a drží jej v paměti do expirace. Alternativou je dočasný `EBAY_ACCESS_TOKEN`. Pouhé vyplnění klíčů nepotvrzuje oprávnění účtu: přístup se ověří při hledání. Bez klíčů je zdroj označen „nenakonfigurován“, nikoli jako zdroj bez nabídek. Scraping webového eBay se nepoužívá.
+
+## Jak probíhá hledání
+
+1. **Plán**: AI nebo transparentně označená pravidla; ručně zvolená kategorie a stav mají přednost. V plánu je vidět každá skupina synonym (OR uvnitř skupiny, AND mezi skupinami).
+2. **Sběr**: 1–100 stránek na web, výchozí rozsah 20. Bazoš má obvykle 20 položek na stránku; eBay se dotazuje po 50. Počet položek Aukra se řídí stránkou webu. Zdrojové nabídky se deduplikují podle ID. Při přesně opakované sadě ID se daný průchod zastaví; pouhý překryv s dřívějšími stránkami další procházení nezastavuje. Vyšší limity prodlužují běh, nikoli rychlost požadavků.
+3. **Popisy**: nastavitelných 0–500 detailů z každého českého webu (výchozí hodnota 60). Agent dává přednost nabídkám, u kterých ve výpisu chybí závada nebo požadovaná vlastnost; finální filtry uplatní po načtení detailu. Nabídky mimo cenu či lokalitu ani zjevné příslušenství zbytečně nedočítá. Neprohlédnuté a chybějící popisy jsou označené. eBay v této verzi používá jen souhrn dostupný přes API.
+4. **Filtry**: cena zboží bez dopravy, poškození nebo netestovaný stav, povinné/vyloučené výrazy, text lokality, aukce. Text se porovnává bez diakritiky; zápisy RTX3060, RTX-3060 a RTX 3060 jsou ekvivalentní. Slovník zahrnuje další řady notebooků. Krátké názvy jako ROG se hledají po slovech, aby neodpovídaly třeba slovu program. Lokalita je podřetězec, nikoli okruh v km. Neznámá cena je standardně vyloučena; lze ji výslovně povolit i při nastaveném rozpočtu. Neznámý typ prodeje se při zákazu aukcí vyloučí.
+5. **Výsledky**: přibývají už při načítání stránek a popisů. Při zastavení zůstávají získané výsledky. Rozhraní vykresluje nabídky po 100 s tlačítkem pro další; CSV zahrnuje celý aktuálně filtrovaný výsledek. Skóre vyjadřuje pouze textovou shodu, ne výhodnost nákupu. Doprava, příhoz, ruční kurz a neověřený stav mají vlastní upozornění. Oblíbené nabídky, uložené filtry a CSV jsou dostupné v rozhraní.
+
+### Zdroje a omezení pokrytí
+
+- **Bazoš**: prochází veřejné kategorie, nikoli adresy hledání zakázané v [robots.txt](https://pc.bazos.cz/robots.txt). Kategorie notebooky, grafické karty, konzole a mobily jsou mapované přímo. U obecné kategorie prochází hlavní výpis. Nabídky filtruje lokálně. TOPované inzeráty ovlivňují pokrytí prvních stránek; aplikace neslibuje kompletní ani chronologický přehled trhu.
+- **Aukro**: notebooky prochází přes kategorii; ostatní přes veřejné vyhledávání. Čte data hlavního výpisu vložená v HTML, nikoli doporučovací karusely. Při změně struktury má zálohu v JSON-LD, kde typ prodeje zůstává „neověřen“. [robots.txt](https://aukro.cz/robots.txt) se ověřuje za běhu.
+- **eBay**: výše uvedené produkční API, omezené získaným oprávněním. Při rozsahu alespoň 4 stránek střídá cílené hledání s širším průchodem kategorie (každá čtvrtá stránka, případně po vyčerpání cíleného dotazu). Oba průchody sdílejí celkový limit, mají vlastní stránkování a společnou deduplikaci. Širší průchod nevyžaduje klíčová slova ani štítek poškození; rozhodují místní filtry. EXTENDED vrací dostupný krátký popis a město. Dostupnost dopravy do ČR, clo a konečná cena vyžadují ověření na eBay. Zvolená lokalita se porovnává pouze s vráceným textem lokality.
+- Automatický přístup k HTML má odstup alespoň 1,2 s mezi požadavky na stejný web, mezipaměť 5 minut a kontrolu robots.txt. Na HTTP 403/429 nebo CAPTCHA se zastaví; ochrany neobchází.
+- Neúspěšný zdroj, změna parseru a skutečně prázdný výsledek jsou odlišné stavy. Při částečné chybě se zachovají již načtené nabídky.
+- Pravidla poškození jsou heuristická a mohou mít falešné shody nebo něco přehlédnout. Výraz „netestovaný“ je kandidát k prověření. Popis závady není diagnóza. Fotografie se neanalyzují AI.
+- Kurzy v nastavení jsou **ruční orientační hodnoty**, nikoli živý kurzovní lístek. Cenový filtr nepřičítá dopravu, clo, daně ani poplatky. Přepočet měn jiných než CZK/USD/EUR/GBP není podporován.
+- Vyhledávání se spouští ručně. Žádné automatické nákupy, kontaktování prodejců ani plánované prohledávání na pozadí.
+
+## Parametry notebooku a hrubý rozdíl
+
+Z názvu a dostupného popisu se lokálně rozpoznávají značka, řada/model, vybraná výrobní označení, CPU, GPU, RAM a disk. Přednost mají pojmenovaná pole („Procesor:“, „RAM:“, parametry Aukra), potom název inzerátu a nakonec volný text popisu; rozpor uvnitř rozhodujícího zdroje nechá údaj neznámý. Nabídky rozšíření („lze rozšířit na 32 GB“), paměť grafické karty a přání při výměně se ignorují. U Aukra se čte celý popis i tabulka parametrů z detailu; intervalové parametry („16 – 31 GB“) se za přesnou hodnotu nepovažují. Rozpoznávání je konzervativní a nepokrývá všechna označení. Neznámé či rozporné údaje zůstávají prázdné; VRAM se nepovažuje za RAM. Více různých disků se nesčítá bez jistoty konfigurace. Kapacita 1 TB se pro filtr převádí na 1000 GB. Model, CPU a GPU lze filtrovat textem, RAM a disk minimální kapacitou. Chybějící vybraný parametr nabídku vyloučí, pokud výslovně nezapneš zahrnutí neznámých parametrů. Známá neshoda neprojde ani pak. Nedostatečné výpisy se mohou doplnit z detailů v nastaveném limitu.
+
+Po sběru nabídek se pro kategorii notebooků automaticky ověřují nové kusy na **Mironetu**. Vyhledává se výrobní označení, případně značka a model; z jednoho hledání se prověří nejvýše 8 produktových stránek. Vyhledání ceny lze vypnout a limit odlišných konfigurací nastavit od 1 do 200 (výchozí 30). Stejné konfigurace sdílejí dotaz v rámci běhu. Používají se stejné limity rychlosti, robots.txt, kontrola přesměrování a pětiminutová mezipaměť jako u ostatních HTML zdrojů. Vyhledávaný model se odesílá Mironetu; neodesílají se kontakty prodávajících.
+
+Cena se přijme pouze u produktu označeného jako nový a dostupný, s cenou CZK z jeho vlastních strukturovaných dat. Vyžaduje se stejné výrobní označení bez známých rozporů, nebo shodná značka, model, CPU, GPU, RAM, kapacita a typ disku. Druhá varianta má slabší jistotu: displej, OS, klávesnice a ostatní výbava mohou být odlišné. Pokud u inzerátu chybí RAM nebo disk, použije se jako třetí, „orientační“ úroveň shoda modelu, CPU a GPU bez známého rozporu; karta ji tak označí a ukáže rozpětí nalezených cen. Odkazy z vyhledávání obchodu se řadí podle shody názvu s modelem, CPU a GPU. Ověřovací stránka proti robotům (např. ALTCHA) se hlásí jako odmítnutý přístup, ne jako nenalezená cena. Na kartě je zdrojový odkaz, typ shody a čas ověření. Jde o dostupnou cenu u jednoho prodejce, nikoli kompletní průzkum ani původní zaváděcí cenu. Starší model nemusí být jako nový v prodeji; v takovém případě se zisk nehádá. Chyba zdroje a dosažení limitu jsou viditelně odlišeny od nedohledané shody.
+
+- **Odhad prodejní ceny = cena nového × 0,75.**
+- **Hrubý rozdíl = cena nového × 0,75 − nákupní cena rozbitého kusu.**
+- **Maximální nákup = cena nového × 0,75 − požadovaný hrubý rozdíl.**
+
+Například nový kus za 20 000 Kč a rozbitý za 4 000 Kč dávají hrubý rozdíl 11 000 Kč. Při požadovaném rozdílu 3 000 Kč je maximální nákup 12 000 Kč. Výpočet zachovává záporné výsledky a neznámou nákupní cenu. **Oprava, práce, doprava, clo a poplatky se podle zadaného vzorce neodečítají. Nejde o čistý zisk ani garantovanou prodejní cenu.** U aukce se používá aktuální příhoz. Požadovaný rozdíl mění doporučené maximum nákupu, neskrývá nabídky. Výsledky lze podle hrubého rozdílu seřadit a parametry i cenové podklady jsou součástí CSV.
+
+## Uložení a soukromí
+
+Posledních 20 běhů je v paměti procesu; restart je odstraní. Oblíbené nabídky, poslední filtry a až 20 uložených hledání jsou v `localStorage` aktuálního prohlížeče. Nejde o trvale synchronizovanou databázi. Uložená nabídka může později zmizet nebo změnit cenu. Klíče jsou jen v `.env`, který je v `.gitignore`. Fotografie se načítají přímo z původních zdrojů.
+
+## Ověření
+
+```powershell
+npm.cmd test
+npm.cmd run test:live
+```
+
+Jednotkové a integrační testy ověřují parsování, měny, aukce, filtry, AI kontrakt/fallback, deduplikaci, chyby zdrojů, zrušení a bezpečnost lokálního HTTP serveru. `test:live` provede jeden skutečný výpis Bazoše a Aukra; nepoužívá klíče ani placená API. Živé OpenAI a eBay volání je možné ověřit až s vlastními klíči.
+
+### Soubory
+
+- `server.js`: lokální HTTP API, běhy, zastavení a statická aplikace.
+- `src/planner.js`: AI plán přes [Responses API / Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses) a lokální alternativa.
+- `src/sources.js`, `src/http.js`, `src/parsers.js`: adaptéry, řízené stahování a parsování.
+- `src/matching.js`: filtry, důvody shody, upozornění.
+- `public/`: samostatné webové rozhraní bez sestavovacího kroku.
+
+Pokud web změní HTML nebo pravidla přístupu, upravuje se jeho adaptér a testy. Aplikace při nerozpoznané struktuře nevydává chybu parseru za nulový počet nabídek.

@@ -1,0 +1,19 @@
+{
+  "name": "lovec-nabidek",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Lokální agent pro hledání nabídek na Bazoši, Aukru a eBay",
+  "engines": { "node": ">=22.9.0" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --watch --env-file-if-exists=.env server.js",
+    "test": "node --test --test-isolation=none",
+    "test:live": "node scripts/live-check.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2",
+    "robots-parser": "^3.0.1",
+    "zod": "^4.1.12"
+  }
+}

@@ -1,0 +1,166 @@
+import { load } from 'cheerio';
+import { getPage } from './http.js';
+import { normalize, parsePrice, safeUrl } from './schema.js';
+import { extractHardware, compareHardware } from './hardware.js';
+
+export const priceRetailers = {
+  mironet: {id:'mironet',name:'Mironet',host:'www.mironet.cz',path:query => `/ProductList/showSearch?EXPF=${encodeURIComponent(query)}`,productPath:/\+dp\d+\//},
+  k24: {id:'k24',name:'K24',host:'www.k24.cz',path:query => `/search/category/1?query=${encodeURIComponent(query)}`,productPath:/^\/product\/\d+\/[^/]+\.html$/},
+};
+// Exact SKU or full configuration gives a firm price; model + CPU + GPU at least an indicative one.
+const hasPriceIdentity = specs => Boolean(specs.sku || ['model','cpu','gpu'].every(key => specs[key] != null));
+const missingFields = specs => [['model','model'],['cpu','CPU'],['gpu','GPU']].filter(([key]) => specs[key] == null).map(([,label]) => label);
+const insufficient = specs => ({status:'insufficient',message:`Pro dohledání ceny chybí ${missingFields(specs).join(', ') || 'výrobní označení'}. Doplň je ve vlastní ceně nebo hledej ručně.`,searchUrl:newPriceSearchUrl(specs)});
+const matchRank = {sku:0,configuration:1,partial:2};
+export { calculateProfit } from '../public/pricing.js';
+import { calculateProfit } from '../public/pricing.js';
+
+export function newPriceSearchUrl(specs, source = 'mironet') {
+  const query = specs.sku || [specs.brand,specs.model].filter(Boolean).join(' ');
+  const retailer = priceRetailers[source];
+  return query && retailer ? `https://${retailer.host}${retailer.path(query)}` : null;
+}
+
+// Product URLs carry the product name; spend the 8 detail reads on names sharing the model, CPU or GPU
+// (a "Acer Nitro" search otherwise starts with Acer Nitro monitors).
+export function rankLinks(links, specs) {
+  const slug = url => decodeURIComponent(new URL(url).pathname).toLowerCase().replace(/[^a-z0-9]/g, '');
+  const tokens = [specs.model, specs.cpu, specs.gpu, specs.sku].filter(Boolean).flatMap(v => String(v).toLowerCase().split(/[\s-]+/)).map(t => t.replace(/[^a-z0-9]/g, '')).filter(t => t.length > 1 && !['core','ultra','ryzen','rtx','gtx','gen'].includes(t));
+  const scored = links.map((url, i) => ({url, i, score: tokens.filter(t => slug(url).includes(t)).length}));
+  const relevant = scored.filter(x => x.score > 0);
+  return (relevant.length ? relevant : scored).sort((a,b) => b.score - a.score || a.i - b.i).map(x => x.url);
+}
+
+export function parseRetailLinks(html, base) {
+  const $ = load(html);
+  const retailer = Object.values(priceRetailers).find(r => r.host === new URL(base).hostname);
+  if (!retailer) return [];
+  return [...new Set($(retailer.id === 'mironet' ? '.nazev a[href]' : '#products-list .product-entry2 .pe2-head a[href]').map((_,a) => safeUrl($(a).attr('href'),base,[retailer.host])).get().filter(url => url && new URL(url).hostname === retailer.host && retailer.productPath.test(new URL(url).pathname)))];
+}
+
+export function parseNewProduct(html, url, now = new Date()) {
+  const retailer = Object.values(priceRetailers).find(r => r.host === new URL(url).hostname);
+  if (!retailer) return null;
+  const $ = load(html);
+  const products = [];
+  let laptopCategory = false;
+  const visit = value => {
+    if (Array.isArray(value)) value.forEach(visit);
+    else if (value && typeof value === 'object') {
+      if ([value['@type']].flat().includes('Product')) products.push(value);
+      if (value['@type'] === 'BreadcrumbList') laptopCategory ||= /notebook|laptop/i.test(JSON.stringify(value.itemListElement ?? []));
+      if (value['@graph']) visit(value['@graph']);
+    }
+  };
+  $('script[type="application/ld+json"]').each((_,e) => { try { visit(JSON.parse($(e).text())); } catch {} });
+  // Only the primary product can supply a price, never recommendations or accessory carousels.
+  if (products.length !== 1) return null;
+  const product = products[0];
+  const offers = [product.offers].flat().filter(Boolean);
+  if (offers.length !== 1 || offers[0]['@type'] !== 'Offer') return null;
+  const offer = offers[0], price = parsePrice(offer.price);
+  if (offer.priceCurrency !== 'CZK' || !price || !/\/(?:InStock|LimitedAvailability)$/.test(offer.availability ?? '')) return null;
+  if (offer.priceValidUntil && String(offer.priceValidUntil).slice(0,10) < now.toISOString().slice(0,10)) return null;
+  const offerUrl = safeUrl(offer.url,url,[retailer.host]);
+  if (!offerUrl || new URL(offerUrl).hostname !== retailer.host || new URL(offerUrl).pathname !== new URL(url).pathname) return null;
+  $('script,style,nav,footer').remove();
+  const body = normalize($('body').text());
+  const state = body.match(/stav zbozi\s*:\s*([a-z]+)/)?.[1];
+  const text = `${product.name ?? ''} ${product.description ?? ''}`;
+  if ((!/\b(?:notebook|laptop)\b/i.test(text) && !laptopCategory) || /repas|rozbalen|pouzit|predvade|poskozen/i.test(normalize(text))) return null;
+  if (offer.itemCondition && !/\/NewCondition$/.test(offer.itemCondition)) return null;
+  if (state && state !== 'nove') return null;
+  if (!/\/NewCondition$/.test(offer.itemCondition ?? '') && state !== 'nove') return null;
+  const specs = extractHardware({title:product.name, description:product.description});
+  // Retailer SKU is an internal ID; the manufacturer's part number is the useful identity.
+  if (typeof product.mpn === 'string' && product.mpn.trim()) specs.sku = product.mpn.trim().toUpperCase();
+  return { title:product.name, url:offerUrl, priceCzk:price, source:retailer.name, sourceId:retailer.id, checkedAt:now.toISOString(), condition:'new', specs };
+}
+
+async function lookupRetailer(specs, retailer, signal, dependencies) {
+  const page = dependencies.getPage ?? getPage;
+  const searchUrl = newPriceSearchUrl(specs,retailer.id);
+  const report = {source:retailer.id,name:retailer.name,searchUrl,checked:0,offers:[]};
+  if (dependencies.blockedSources?.has(retailer.id)) return {...report,status:'unavailable',blocked:true,message:'Zdroj v tomto běhu odmítl přístup. Další požadavky jsou zastavené.'};
+  try {
+    const search = await page(searchUrl,signal);
+    if (new URL(search.url).hostname !== retailer.host) throw new Error('Unexpected retailer redirect');
+    // A unique search result redirects straight to its product detail.
+    const isDetail = retailer.productPath.test(new URL(search.url).pathname);
+    const direct = isDetail ? parseNewProduct(search.html,search.url) : null;
+    const directMatch = direct && compareHardware(specs,direct.specs);
+    if (directMatch) return {...report,checked:1,status:'matched',offers:[{...direct,match:directMatch}]};
+    const links = isDetail ? [] : rankLinks(parseRetailLinks(search.html,search.url),specs).slice(0,8);
+    const matches = [];
+    let failures = 0;
+    for (const url of links) {
+      signal?.throwIfAborted();
+      try {
+        const detail = await page(url,signal);
+        if (new URL(detail.url).hostname !== retailer.host) throw new Error('Unexpected retailer redirect');
+        report.checked++;
+        const product = parseNewProduct(detail.html,detail.url);
+        if (!product) continue;
+        const match = compareHardware(specs,product.specs);
+        if (match) matches.push({...product,match});
+      } catch (error) {
+        if (signal?.aborted) throw error;
+        if (error.code === 'blocked') return {...report,status:'unavailable',blocked:true,message:error.message,offers:matches};
+        failures++;
+      }
+    }
+    return {...report,offers:matches,status:matches.length ? 'matched' : failures ? 'unavailable' : 'not_found',message:failures ? 'Část cenových stránek se nepodařilo ověřit.' : matches.length ? 'Dostupný nový kus se shodou.' : 'V prověřených nabídkách není potvrzená shoda nového dostupného kusu.'};
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    return {...report,status:'unavailable',blocked:error.code === 'blocked',message:error.code === 'blocked' ? error.message : 'Cenový zdroj se nepodařilo načíst.'};
+  }
+}
+
+export async function lookupNewPrice(specs, signal, dependencies = {}) {
+  const selected = (dependencies.priceSources ?? ['mironet','k24']).map(id => priceRetailers[id]).filter(Boolean);
+  const searchLinks = selected.map(r => ({source:r.id,name:r.name,url:newPriceSearchUrl(specs,r.id)}));
+  if (!hasPriceIdentity(specs)) return {...insufficient(specs),searchLinks};
+  const settled = await Promise.allSettled(selected.map(r => lookupRetailer(specs,r,signal,dependencies)));
+  signal?.throwIfAborted();
+  const reports = settled.map((result,i) => result.status === 'fulfilled' ? result.value : {source:selected[i].id,name:selected[i].name,status:'unavailable',offers:[],message:'Zdroj se nepodařilo ověřit.'});
+  for (const report of reports) if (report.blocked) dependencies.blockedSources?.add(report.source);
+  const offers = [...new Map(reports.flatMap(r => r.offers).map(o => [o.url,o])).values()].sort((a,b) => matchRank[a.match] - matchRank[b.match] || a.priceCzk-b.priceCzk);
+  const reference = offers[0];
+  // Prefer exact manufacturer IDs; compare prices only within the strongest available match class.
+  const comparable = offers.filter(o => o.match === reference?.match);
+  return {status:reference ? 'matched' : reports.some(r => r.status === 'unavailable') ? 'unavailable' : 'not_found',reference,offers,reports,searchLinks,searchUrl:searchLinks[0]?.url,
+    range:comparable.length ? {min:Math.min(...comparable.map(o => o.priceCzk)),max:Math.max(...comparable.map(o => o.priceCzk)),count:comparable.length} : null,
+    blocked:reports.length > 0 && reports.every(r => r.blocked),message:reference ? 'Použita nejnižší ověřená cena z nejsilnější dostupné shody.' : 'Cenu nového kusu se nepodařilo potvrdit. Podrobnosti najdeš u jednotlivých obchodů.'};
+}
+
+export async function enrichValuations(job, signal, dependencies = {}) {
+  const lookup = dependencies.lookupNewPrice ?? lookupNewPrice;
+  const cache = new Map();
+  const limit = job.filters.priceLookupLimit ?? 30;
+  let blocked = null;
+  const blockedSources = new Set();
+  for (const item of job.items) item.valuation = {status:'pending',message:'Čeká na ověření ceny nového kusu.'};
+  job.valuationProgress = {lookups:0,matched:0,limit};
+  for (const item of job.items) {
+    signal.throwIfAborted();
+    const key = JSON.stringify(item.specs);
+    let value = cache.get(key);
+    if (!value) {
+      if (!hasPriceIdentity(item.specs)) value = {...insufficient(item.specs),searchLinks:(job.filters.priceSources ?? ['mironet','k24']).map(id => ({source:id,name:priceRetailers[id].name,url:newPriceSearchUrl(item.specs,id)}))};
+      else if (blocked) value = {...blocked,searchUrl:newPriceSearchUrl(item.specs)};
+      else if (job.valuationProgress.lookups >= limit) value = {status:'limit',message:'Dosažen nastavený limit dohledávání cen.',searchUrl:newPriceSearchUrl(item.specs)};
+      else {
+        job.valuationProgress.lookups++;
+        job.phase = `Ověřuji cenu nového notebooku · ${job.valuationProgress.lookups}/${limit}`;
+        value = await lookup(item.specs,signal,{priceSources:job.filters.priceSources,blockedSources});
+        if (value.blocked) blocked = value;
+      }
+      cache.set(key,value);
+    }
+    item.valuation = {...value};
+    if (value.reference) {
+      item.valuation.calculation = calculateProfit(value.reference.priceCzk,item.priceCzk,job.filters.targetProfit ?? 0);
+      job.valuationProgress.matched++;
+    }
+  }
+}

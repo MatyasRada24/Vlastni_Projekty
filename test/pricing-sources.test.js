@@ -1,0 +1,70 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {lookupNewPrice,parseNewProduct,parseRetailLinks,newPriceSearchUrl} from '../src/valuation.js';
+import {SourceError} from '../src/http.js';
+import {validateManualPrice,withManualPrice} from '../public/pricing.js';
+import {searchSchema} from '../src/schema.js';
+
+const urls={mironet:'https://www.mironet.cz/lenovo-loq+dp123456/',k24:'https://www.k24.cz/product/123456/Lenovo_LOQ.html'};
+const productHtml=(source,price,extra={})=>`<body><h1>Lenovo LOQ</h1><span>Stav zboží: Nové</span><script type="application/ld+json">${JSON.stringify({'@type':'BreadcrumbList',itemListElement:[{item:{name:'Notebooky'}}]})}</script><script type="application/ld+json">${JSON.stringify({'@type':'Product',name:'Lenovo LOQ 15IRH8',mpn:'82XV00ABCK',offers:{'@type':'Offer',url:urls[source],price,priceCurrency:'CZK',itemCondition:'https://schema.org/NewCondition',availability:'https://schema.org/InStock',...extra}})}</script></body>`;
+const searchHtml=source=>source === 'mironet' ? `<div class="nazev"><a href="${urls[source]}">Notebook Lenovo LOQ</a></div>` : `<div id="products-list"><div class="product-entry2"><div class="pe2-head"><a href="${urls[source]}">Notebook Lenovo LOQ</a></div></div></div><aside><a href="https://www.k24.cz/product/999999/Recommendation.html">Recommendation</a></aside>`;
+const fetchPrices=async url=>{const source=url.includes('k24.cz')?'k24':'mironet';return {url,html:url===urls[source]?productHtml(source,source==='k24'?18000:20000):searchHtml(source)};};
+
+test('Compares both stores and chooses the lowest equally strong verified price',async()=>{
+  const result=await lookupNewPrice({sku:'82XV00ABCK'},new AbortController().signal,{getPage:fetchPrices});
+  assert.equal(result.status,'matched');assert.equal(result.reference.source,'K24');assert.equal(result.reference.priceCzk,18000);
+  assert.equal(result.offers.length,2);assert.equal(result.reports.length,2);assert.deepEqual(result.range,{min:18000,max:20000,count:2});
+});
+
+test('A blocked store does not suppress the other and stays blocked for the current run',async()=>{
+  const blockedSources=new Set();let mironetCalls=0,k24Calls=0;
+  const getPage=async url=>{if(url.includes('mironet')){mironetCalls++;throw new SourceError('Blocked','blocked');}k24Calls++;return fetchPrices(url);};
+  for(let i=0;i<2;i++){
+    const result=await lookupNewPrice({sku:'82XV00ABCK'},new AbortController().signal,{getPage,blockedSources});
+    assert.equal(result.status,'matched');assert.equal(result.reference.source,'K24');assert.equal(result.reports[0].status,'unavailable');assert.equal(result.blocked,false);
+  }
+  assert.equal(mironetCalls,1);assert.equal(k24Calls,4);
+});
+
+test('K24 accepts explicit new product data but rejects used, expired or unrelated URLs',()=>{
+  assert.equal(parseNewProduct(productHtml('k24',18000),urls.k24).source,'K24');
+  for(const extra of [{itemCondition:'https://schema.org/UsedCondition'},{priceValidUntil:'2020-01-01'},{url:'https://evil.example/product/123456/Lenovo_LOQ.html'}])assert.equal(parseNewProduct(productHtml('k24',18000,extra),urls.k24),null);
+  assert.deepEqual(parseRetailLinks(searchHtml('k24'),newPriceSearchUrl({sku:'82XV00ABCK'},'k24')),[urls.k24]);
+});
+
+test('Missing hardware does not trigger network requests but exposes both manual search links',async()=>{
+  const value=await lookupNewPrice({model:'LOQ 15IRH8'},new AbortController().signal,{getPage:async()=>{throw new Error('must not fetch');}});
+  assert.equal(value.status,'insufficient');assert.equal(value.searchLinks.length,2);
+});
+
+test('Cancellation propagates while stores are checked in parallel',async()=>{
+  const controller=new AbortController();
+  await assert.rejects(lookupNewPrice({sku:'82XV00ABCK'},controller.signal,{getPage:async()=>{controller.abort();controller.signal.throwIfAborted();}}));
+});
+
+test('Manual price requires a positive price, safe source link and explicit confirmation',()=>{
+  const entry={priceCzk:20000,url:'https://example.com/notebook',confirmed:true};
+  assert.equal(validateManualPrice(entry).priceCzk,20000);
+  for(const patch of [{priceCzk:0},{priceCzk:NaN},{priceCzk:Infinity},{priceCzk:-1},{priceCzk:10000001},{url:'javascript:alert(1)'},{url:'https://user:password@example.com/'},{url:''},{confirmed:false}])assert.throws(()=>validateManualPrice({...entry,...patch}));
+});
+
+test('Manual calculation retains original automatic evidence and can be removed without mutating the item',()=>{
+  const original={id:'bazos:1',priceCzk:4000,valuation:{status:'matched',reference:{priceCzk:25000},offers:[{source:'K24',priceCzk:25000}]}};
+  const modified=withManualPrice(original,{priceCzk:20000,url:'https://example.com/notebook',confirmed:true},3000);
+  assert.equal(modified.valuation.status,'manual');assert.equal(modified.valuation.calculation.grossProfit,11000);assert.equal(modified.valuation.calculation.maxPurchasePrice,12000);
+  assert.equal(modified.valuation.offers[0].priceCzk,25000);assert.equal(original.valuation.reference.priceCzk,25000);
+  assert.equal(withManualPrice(original,null),original);assert.equal(withManualPrice(original,{priceCzk:-1}),original);
+});
+
+test('Manual values preserve unknown purchase prices and losses',()=>{
+  const entry={priceCzk:20000,url:'https://example.com/notebook',confirmed:true};
+  assert.equal(withManualPrice({priceCzk:null},entry).valuation.calculation.grossProfit,null);
+  assert.equal(withManualPrice({priceCzk:17000},entry).valuation.calculation.grossProfit,-2000);
+});
+
+test('Price source selection is explicit, deduplicated and validated',()=>{
+  const base={prompt:'notebook',sources:['bazos']};
+  assert.deepEqual(searchSchema.parse(base).priceSources,['mironet','k24']);
+  assert.deepEqual(searchSchema.parse({...base,priceSources:['k24','k24']}).priceSources,['k24']);
+  assert.throws(()=>searchSchema.parse({...base,priceSources:['evil']}));assert.throws(()=>searchSchema.parse({...base,priceSources:[]}));
+});
