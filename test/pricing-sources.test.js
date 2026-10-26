@@ -70,6 +70,22 @@ test('Used-market resale uses the median of working same-config listings and ign
   assert.equal(job.items[0].valuation.calculation.grossProfit, 8500);
 });
 
+test('MacBooks: the chip stands in for the GPU and Apple Store prices the same size and chip', async ()=>{
+  const { lookupNewPrice, parseAppleStore } = await import('../src/valuation.js');
+  const { extractHardware } = await import('../src/hardware.js');
+  const html = '"aosContainerPartNumber":"RO_MBA_M5_13_INCH_SILVER_GOO_2026","x":1,"priceKey":"13inch-silver-10-8"}'
+    + ',"aosContainerPartNumber":"RO_MBA_M5_15_INCH_SILVER_BET_2026","priceKey":"15inch-silver-10-10"}'
+    + ',"prices":{"13inch-silver-10-8":{"comparativeDisplayPrice":"Od <span class=\\"nowrap\\">34 990 Kč</span>","amount":34990.00},"15inch-silver-10-10":{"comparativeDisplayPrice":"x","amount":41990.00}}';
+  assert.deepEqual(parseAppleStore(html,'https://www.apple.com/cz/shop/buy-mac/macbook-air').map(o => [o.specs.model,o.specs.cpu,o.priceCzk]), [['MACBOOK AIR 13','M5',34990],['MACBOOK AIR 15','M5',41990]]);
+  const page = async url => ({ html, url });
+  const air = extractHardware({ title:'MacBook Air 15 M5 16GB 512GB nefunkční' });
+  assert.deepEqual([air.model, air.cpu, air.gpu], ['MACBOOK AIR 15','M5',null]);
+  const found = await lookupNewPrice(air, new AbortController().signal, { getPage:page });
+  assert.deepEqual([found.status, found.reference.priceCzk, found.reference.match], ['matched',41990,'partial']);
+  const older = await lookupNewPrice(extractHardware({ title:'MacBook Air 13 M2 8GB 256GB' }), new AbortController().signal, { getPage:page });
+  assert.equal(older.status, 'not_found');
+});
+
 test('Missing hardware does not trigger network requests but exposes both manual search links',async()=>{
   const value=await lookupNewPrice({model:'LOQ 15IRH8'},new AbortController().signal,{getPage:async()=>{throw new Error('must not fetch');}});
   assert.equal(value.status,'insufficient');assert.equal(value.searchLinks.length,2);

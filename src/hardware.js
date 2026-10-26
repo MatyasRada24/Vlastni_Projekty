@@ -53,6 +53,7 @@ const modelPatterns = [
   /\b(?:zephyrus|zephirus|strix|flow|tuf\s+gaming)\s+(?:scar\s+)?[a-z]\d{2}\b/g,
   /\b(?:katana|sword|cyborg|raider|stealth|pulse|bravo|vector|titan|crosshair|thin|modern|prestige|summit|creator|alpha|delta|gf|gl|gp|ge|gs|gt)\s*a?\d{2}(?:\s+hx)?(?:\s+[a-z0-9]{3,10}(?:-[a-z0-9]{3,8})?)?\b/g,
   /\bmacbook\s+(?:air|pro)\s+(?:13|14|15|16)(?:\s+m[1-9](?:\s+(?:pro|max))?)?\b/g,
+  /\bmacbook\s+(?:air|pro)\b/g,
   /\b(?:razer\s+blade\s+1[4-8]|aorus\s+[a-z]?\d{2}|matebook\s+(?:d\s*)?1[3-6]|galaxy\s+book\s*\d(?:\s+(?:pro|ultra|360))?)\b/g,
 ];
 const skuPatterns = [
@@ -111,7 +112,8 @@ function freeText(text, { title = false, apple = false } = {}) {
     .filter((b,i,all) => b !== 'SAMSUNG' || new Set(all).size === 1); // SSD/RAM vendor, rarely the laptop brand when another brand is named
   // A title like "Herní Omen 16, RTX 4070" names the brand through its product line.
   if (title && !out.brand.length) out.brand = families.filter(([,re]) => re.test(text)).map(([b]) => b);
-  out.model = modelPatterns.flatMap(re => [...text.matchAll(re)].map(m => generation(tidy(m[0]
+  // The chip belongs to the CPU field: "MacBook Air 13 M2" is model "MACBOOK AIR 13" with CPU "M2".
+  out.model = modelPatterns.flatMap(re => [...text.matchAll(re)].map(m => generation(tidy(m[0].replace(/^(macbook\s+(?:air|pro)\s+\d{2})\s+m[1-9].*$/, '$1')
     .replace(/^lattitude/, 'latitude').replace(/\blaptop\s*-?\s*/, '').replace(/\bg\.\s*(\d)/, 'g$1')
     .replace(/^lenovo\s+(?:thinkpad\s+)?/, 'thinkpad ').replace(/^dell\s+(?:latitude\s+)?/, 'latitude ')))));
   out.cpu = collect(text, cpuPatterns);
@@ -228,7 +230,13 @@ export function hardwareMatches(specs, filters) {
   return true;
 }
 
+// Apple silicon has the GPU inside the chip, so "M3" already identifies the graphics.
+export const integratedChip = specs => specs?.brand === 'APPLE' && /^M[1-9]/.test(specs?.cpu ?? '') && specs?.gpu == null;
+
 export function compareHardware(wanted, found) {
+  if (integratedChip(wanted) && integratedChip(found)) {
+    wanted = { ...wanted, gpu: wanted.cpu }; found = { ...found, gpu: found.cpu };
+  }
   const keys = ['brand','cpu','gpu','ramGb','storageGb','storageType'];
   if (keys.some(key => wanted[key] != null && found[key] != null && canonical(wanted[key]) !== canonical(found[key]))) return null;
   if (wanted.sku && found.sku && canonical(wanted.sku) === canonical(found.sku)) return 'sku';

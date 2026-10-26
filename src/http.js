@@ -1,6 +1,6 @@
 import robotsParser from 'robots-parser';
 
-const allowedHosts = new Set(['www.bazos.cz', 'pc.bazos.cz', 'mobil.bazos.cz', 'aukro.cz', 'www.mironet.cz', 'www.k24.cz']);
+const allowedHosts = new Set(['www.bazos.cz', 'pc.bazos.cz', 'mobil.bazos.cz', 'aukro.cz', 'www.mironet.cz', 'www.k24.cz', 'www.apple.com']);
 const agent = 'DealScout';
 const cache = new Map();
 let cacheBytes = 0;

@@ -1,15 +1,15 @@
 import { load } from 'cheerio';
 import { getPage } from './http.js';
 import { normalize, parsePrice, safeUrl } from './schema.js';
-import { extractHardware, compareHardware } from './hardware.js';
+import { extractHardware, compareHardware, integratedChip } from './hardware.js';
 
 export const priceRetailers = {
   mironet: {id:'mironet',name:'Mironet',host:'www.mironet.cz',path:query => `/ProductList/showSearch?EXPF=${encodeURIComponent(query)}`,productPath:/\+dp\d+\//},
   k24: {id:'k24',name:'K24',host:'www.k24.cz',path:query => `/search/category/1?query=${encodeURIComponent(query)}`,productPath:/^\/product\/\d+\/[^/]+\.html$/},
 };
 // Exact SKU or full configuration gives a firm price; model + CPU + GPU at least an indicative one.
-const hasPriceIdentity = specs => Boolean(specs.sku || ['model','cpu','gpu'].every(key => specs[key] != null));
-const missingFields = specs => [['model','model'],['cpu','CPU'],['gpu','GPU']].filter(([key]) => specs[key] == null).map(([,label]) => label);
+const hasPriceIdentity = specs => Boolean(specs.sku || ['model','cpu','gpu'].every(key => specs[key] != null) || (integratedChip(specs) && specs.model));
+const missingFields = specs => [['model','model'],['cpu', specs.brand === 'APPLE' ? 'čip (M1–M5)' : 'CPU'],...(specs.brand === 'APPLE' ? [] : [['gpu','GPU']])].filter(([key]) => specs[key] == null).map(([,label]) => label);
 const insufficient = specs => ({status:'insufficient',message:`Pro dohledání ceny chybí ${missingFields(specs).join(', ') || 'výrobní označení'}. Doplň je ve vlastní ceně nebo hledej ručně.`,searchUrl:newPriceSearchUrl(specs)});
 const matchRank = {sku:0,configuration:1,partial:2};
 export { calculateProfit } from '../public/pricing.js';
@@ -69,6 +69,8 @@ export function parseNewProduct(html, url, now = new Date()) {
   const state = body.match(/stav zbozi\s*:\s*([a-z]+)/)?.[1];
   const text = `${product.name ?? ''} ${product.description ?? ''}`;
   if ((!/\b(?:notebook|laptop)\b/i.test(text) && !laptopCategory) || /repas|rozbalen|pouzit|predvade|poskozen/i.test(normalize(text))) return null;
+  // Cases, skins and chargers "pro MacBook Air 13" are not the laptop itself.
+  if (/\b(?:obal|pouzdr\w*|kryt|skin|shell|case|sleeve|folie|taska|batoh|nabijec\w*|adapter|baterie|klavesnice pro|pro (?:apple )?macbook|pro notebook)\b/.test(normalize(product.name ?? ''))) return null;
   if (offer.itemCondition && !/\/NewCondition$/.test(offer.itemCondition)) return null;
   if (state && state !== 'nove') return null;
   if (!/\/NewCondition$/.test(offer.itemCondition ?? '') && state !== 'nove') return null;
@@ -117,7 +119,49 @@ async function lookupRetailer(specs, retailer, signal, dependencies) {
   }
 }
 
+// Apple's Czech store embeds its configurations in the page: the container part number names the
+// family and chip (RO_MBA_M5_13_INCH…), the price key the size and chip (14inch-silver-standard-m5pro-15-16).
+// Only the current generation is sold, so older chips are reported as not found.
+const appleFamily = specs => specs.brand === 'APPLE' && /^MACBOOK (AIR|PRO)\b/.exec(specs.model ?? '')?.[1];
+export function parseAppleStore(html, url, now = new Date()) {
+  const family = /macbook-pro/.test(url) ? 'PRO' : 'AIR';
+  const best = new Map();
+  for (const m of html.matchAll(/"aosContainerPartNumber":"RO_(MBA|MBP)_([A-Z0-9_]+?)_(\d{2})_?INCH[^"]*"[\s\S]*?"priceKey":"([\w-]+)"/g)) {
+    const key = m[4], price = Number(html.match(new RegExp(`"${key}":\\{[^}]*?"amount":([\\d.]+)`))?.[1]);
+    if (!Number.isFinite(price) || price <= 0) continue;
+    const size = key.match(/^(\d{2})inch/)?.[1] ?? m[3];
+    const chip = (key.match(/-(m\d(?:pro|max)?)-/)?.[1] ?? m[2].match(/^M\d(?:PRO|MAX)?/)?.[0] ?? '').toUpperCase().replace(/(M\d)(PRO|MAX)/, '$1 $2');
+    if (!chip) continue;
+    const id = `${size}|${chip}`;
+    if (!best.has(id) || best.get(id).priceCzk > price) best.set(id, { title:`MacBook ${family === 'AIR' ? 'Air' : 'Pro'} ${size}" ${chip} · nejlevnější konfigurace`, url, priceCzk:price, source:'Apple Store', sourceId:'apple', checkedAt:now.toISOString(), condition:'new',
+      specs:{ brand:'APPLE', model:`MACBOOK ${family} ${size}`, cpu:chip, gpu:null, sku:null, ramGb:null, storageGb:null, storageType:'SSD', ambiguous:[] } });
+  }
+  return [...best.values()];
+}
+
+async function lookupApple(specs, signal, dependencies) {
+  const page = dependencies.getPage ?? getPage;
+  const url = `https://www.apple.com/cz/shop/buy-mac/macbook-${appleFamily(specs).toLowerCase()}`;
+  const report = { source:'apple', name:'Apple Store', searchUrl:url, checked:0, offers:[] };
+  try {
+    const result = await page(url, signal);
+    report.checked = 1;
+    // "MacBook Air M4" without a size compares against every size; the cheapest (13") wins.
+    const offers = parseAppleStore(result.html, result.url).map(o => ({ ...o, match: compareHardware(/\d{2}$/.test(specs.model) ? specs : { ...specs, model:o.specs.model }, o.specs) })).filter(o => o.match);
+    return { ...report, offers, status: offers.length ? 'matched' : 'not_found', message: offers.length ? 'Nejlevnější konfigurace se stejnou velikostí a čipem; RAM a úložiště se mohou lišit.' : 'Apple prodává jen aktuální generaci. Starší čip už nový nekoupíš; použij bazarovou cenu.' };
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    return { ...report, status:'unavailable', blocked:error.code === 'blocked', message:'Apple Store se nepodařilo načíst.' };
+  }
+}
+
 export async function lookupNewPrice(specs, signal, dependencies = {}) {
+  if (appleFamily(specs) && hasPriceIdentity(specs)) {
+    const report = await lookupApple(specs, signal, dependencies);
+    const offers = [...report.offers].sort((a,b) => a.priceCzk - b.priceCzk), reference = offers[0];
+    return { status: reference ? 'matched' : report.status, reference, offers, reports:[report], searchLinks:[{source:'apple',name:'Apple Store',url:report.searchUrl}], searchUrl:report.searchUrl,
+      range: offers.length ? { min:offers[0].priceCzk, max:offers.at(-1).priceCzk, count:offers.length } : null, blocked: Boolean(report.blocked), message: reference ? 'Použita cena nejlevnější konfigurace v Apple Store.' : report.message };
+  }
   const selected = (dependencies.priceSources ?? ['mironet','k24']).map(id => priceRetailers[id]).filter(Boolean);
   const searchLinks = selected.map(r => ({source:r.id,name:r.name,url:newPriceSearchUrl(specs,r.id)}));
   if (!hasPriceIdentity(specs)) return {...insufficient(specs),searchLinks};

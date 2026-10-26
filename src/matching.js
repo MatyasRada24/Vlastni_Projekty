@@ -49,7 +49,7 @@ export function detailCandidate(item, plan, filters) {
   // Spend reads on unconfirmed candidates first, instead of repeatedly inspecting already confirmed matches.
   const specs = extractHardware(item);
   const needsSpecs = (filters.model && !specs.model) || (filters.cpu && !specs.cpu) || (filters.gpu && !specs.gpu) || (filters.minRamGb != null && specs.ramGb === null) || (filters.minStorageGb != null && specs.storageGb === null);
-  const needsValuation = plan.category === 'laptops' && filters.lookupNewPrices && !specs.sku && ['model','cpu','gpu','ramGb','storageGb'].some(key => specs[key] == null);
+  const needsValuation = plan.category === 'laptops' && filters.lookupNewPrices && !specs.sku && ['model','cpu','gpu','ramGb','storageGb'].some(key => specs[key] == null && !(key === 'gpu' && specs.brand === 'APPLE'));
   return !!needsSpecs || !!needsValuation || !productMatches(item, plan, filters) || (plan.damaged && !damageEvidence(item).length);
 }
 
