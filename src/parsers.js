@@ -129,6 +129,7 @@ export function parseEbay(data, now = Date.now()) {
     item.description = clean(row.shortDescription);
     item.image = safeUrl(row.image?.imageUrl, 'https://www.ebay.com', ['ebayimg.com']);
     item.location = clean([row.itemLocation?.city, row.itemLocation?.country].filter(Boolean).join(', '));
+    item.country = row.itemLocation?.country ?? null;
     item.endAt = row.itemEndDate ?? null;
     const costs = (row.shippingOptions ?? []).filter(o => o.shippingCost?.currency === item.currency).map(o => parsePrice(o.shippingCost.value)).filter(x => x !== null);
     item.shipping = costs.length ? Math.min(...costs) : null;

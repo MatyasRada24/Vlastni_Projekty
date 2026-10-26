@@ -13,8 +13,17 @@ export function calculateProfit(newPriceCzk, purchasePriceCzk, targetProfit = 0)
 export const defaultCosts = {
   repair: { power:1500, display:1800, bios:800, liquid:2000, motherboard:3000, gpu:2500, charging:600, keyboard:900, chassis:800, battery:1000, untested:1500, unknown:1500 },
   risk: { parts:800, charger:400, repair:500 },
-  shipping: 120, feePercent: 0, sellFeePercent: 0,
+  shipping: 120, feePercent: 0, sellFeePercent: 0, importVatPercent: 21, importHandling: 350,
 };
+
+// Laptops (HS 8471) carry 0 % EU duty; imports from outside the EU pay Czech VAT on goods + shipping
+// and a carrier clearance fee.
+const eu = new Set(['AT','BE','BG','CY','CZ','DE','DK','EE','ES','FI','FR','GR','HR','HU','IE','IT','LT','LU','LV','MT','NL','PL','PT','RO','SE','SI','SK']);
+export function importCost(item, costs = defaultCosts) {
+  if (item.source !== 'ebay' || !item.country || eu.has(item.country) || !Number.isFinite(item.priceCzk)) return 0;
+  const base = item.priceCzk + (Number.isFinite(item.shippingCzk) ? item.shippingCzk : 0);
+  return round(base * costs.importVatPercent / 100 + costs.importHandling);
+}
 export const costLabels = {
   power:'Nezapne se', display:'Displej / obraz', bios:'BIOS / firmware', liquid:'Polití', motherboard:'Základní deska', gpu:'Grafika / přehřívání', charging:'Nabíjení',
   keyboard:'Klávesnice / touchpad', chassis:'Panty / šasi', battery:'Baterie', untested:'Netestováno', unknown:'Závada neuvedena',
@@ -25,7 +34,7 @@ export function mergeCosts(saved) {
   const costs = structuredClone(defaultCosts);
   if (!saved || typeof saved !== 'object') return costs;
   for (const group of ['repair','risk']) for (const key of Object.keys(costs[group])) if (Number.isFinite(saved[group]?.[key]) && saved[group][key] >= 0) costs[group][key] = saved[group][key];
-  for (const key of ['shipping','feePercent','sellFeePercent']) if (Number.isFinite(saved[key]) && saved[key] >= 0) costs[key] = saved[key];
+  for (const key of ['shipping','feePercent','sellFeePercent','importVatPercent','importHandling']) if (Number.isFinite(saved[key]) && saved[key] >= 0) costs[key] = saved[key];
   return costs;
 }
 

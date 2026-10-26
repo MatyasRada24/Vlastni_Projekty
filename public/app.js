@@ -1,4 +1,4 @@
-import {calculateProfit, calculateNet, mergeCosts, costLabels, validateManualPrice, withManualPrice} from './pricing.js';
+import {calculateProfit, calculateNet, importCost, mergeCosts, costLabels, validateManualPrice, withManualPrice} from './pricing.js';
 const $ = selector => document.querySelector(selector);
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, x => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[x]));
 const money = value => new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 2 }).format(value);
@@ -16,7 +16,7 @@ let costs = mergeCosts(readLocal('lovec-costs', null));
 const effectiveItem = item => {
   const target = item.valuation?.calculation?.targetProfit ?? job?.filters?.targetProfit ?? 0;
   const priced = withManualPrice(item,manualPrices[item.id],target);
-  return {...priced, net: calculateNet(priced.valuation?.calculation?.resaleEstimate, priced, costs, target)};
+  return {...priced, net: calculateNet(priced.valuation?.calculation?.resaleEstimate, priced, costs, target, importCost(priced, costs))};
 };
 const bestProfit = item => item.net?.netProfit ?? item.valuation?.calculation?.grossProfit;
 const initialEmptyState = $('#results').innerHTML;
@@ -261,19 +261,32 @@ $('#results').addEventListener('submit', event => {
 });
 $('#nav-search').addEventListener('click', () => { savedView = false; renderItems(); });
 $('#nav-saved').addEventListener('click', () => { savedView = true; renderItems(); });
+async function applyCnbRates() {
+  const manual = !$('#use-cnb').checked;
+  document.querySelectorAll('.rate-grid input[id$=-rate]').forEach(input => { input.readOnly = !manual; });
+  if (manual) { $('#cnb-note').textContent = 'Používáš vlastní kurzy. Daně, clo a poplatky v nich nejsou.'; return; }
+  try {
+    const cnb = await api('/api/rates');
+    $('#usd-rate').value = cnb.rates.USD; $('#eur-rate').value = cnb.rates.EUR; $('#gbp-rate').value = cnb.rates.GBP;
+    $('#cnb-note').textContent = `Kurz ČNB ze dne ${new Date(cnb.date).toLocaleDateString('cs-CZ')}. Použije se při dalším hledání.`;
+  } catch { $('#cnb-note').textContent = 'Kurz ČNB se nepodařilo načíst, používají se uložené kurzy.'; }
+}
+$('#use-cnb').addEventListener('change', applyCnbRates);
+
 function renderCosts(values) {
   $('#cost-grid').innerHTML = ['repair','risk'].flatMap(group => Object.entries(values[group]).map(([key,czk]) => `<label>${escapeHtml(costLabels[key] ?? key)}<input type="number" min="0" max="1000000" step="50" data-cost-group="${group}" data-cost-key="${key}" value="${czk}"></label>`)).join('');
   $('#cost-shipping').value = values.shipping; $('#cost-fee').value = values.feePercent; $('#cost-sell-fee').value = values.sellFeePercent;
+  $('#cost-import-vat').value = values.importVatPercent; $('#cost-import-fee').value = values.importHandling;
 }
 function readCosts() {
-  const saved = { repair:{}, risk:{}, shipping:Number($('#cost-shipping').value), feePercent:Number($('#cost-fee').value), sellFeePercent:Number($('#cost-sell-fee').value) };
+  const saved = { repair:{}, risk:{}, shipping:Number($('#cost-shipping').value), feePercent:Number($('#cost-fee').value), sellFeePercent:Number($('#cost-sell-fee').value), importVatPercent:Number($('#cost-import-vat').value), importHandling:Number($('#cost-import-fee').value) };
   document.querySelectorAll('[data-cost-group]').forEach(input => { if (input.value !== '') saved[input.dataset.costGroup][input.dataset.costKey] = Number(input.value); });
   return mergeCosts(saved);
 }
 $('#settings-button').addEventListener('click', () => { renderCosts(costs); $('#settings').showModal(); });
 $('#reset-costs').addEventListener('click', () => renderCosts(mergeCosts(null)));
 $('#help-button').addEventListener('click', () => $('#help').showModal());
-$('#settings').addEventListener('close', () => { if ($('#settings').returnValue === 'save') { writeLocal('lovec-rates', { usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value) }); costs = readCosts(); writeLocal('lovec-costs', costs); lastResultsKey = ''; renderItems(); toast('Náklady jsou přepočítané. Kurzy se použijí při příštím hledání.'); } });
+$('#settings').addEventListener('close', () => { if ($('#settings').returnValue === 'save') { writeLocal('lovec-rates', { useCnb: $('#use-cnb').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value) }); costs = readCosts(); writeLocal('lovec-costs', costs); lastResultsKey = ''; renderItems(); toast('Náklady jsou přepočítané. Kurzy se použijí při příštím hledání.'); } });
 function renderSearches() { $('#saved-searches').innerHTML = '<option value="">Vyber uložené…</option>' + searches.map((s,i) => `<option value="${i}">${escapeHtml(s.prompt)}</option>`).join(''); }
 $('#save-search').addEventListener('click', () => { const data = filters(); if (!data.prompt) return; searches = [data, ...searches.filter(s => JSON.stringify(s) !== JSON.stringify(data))].slice(0,20); writeLocal('lovec-searches', searches); renderSearches(); toast('Hledání uloženo v prohlížeči.'); });
 $('#saved-searches').addEventListener('change', event => { if (event.target.value !== '') restoreFilters(searches[Number(event.target.value)]); });
@@ -293,6 +306,8 @@ try {
   $('#connection-status').innerHTML = `Bazoš a Aukro: veřejné stránky<br>AI plánování: <strong>${config.aiConfigured ? 'klíč nastaven (platnost se ověří při hledání)' : 'nenastaveno · fungují lokální pravidla'}</strong><br>eBay: <strong>${config.ebayConfigured ? 'klíče nastaveny (přístup se ověří při hledání)' : 'chybí API klíče'}</strong>`;
   const previous = readLocal('lovec-last-filters', null); if (previous) restoreFilters(previous.detailLimit === undefined ? { ...previous, pages: Math.max(20,previous.pages || 0), detailLimit:60 } : previous);
   const rates = readLocal('lovec-rates', null); if (rates) for (const [key,id] of Object.entries({usdRate:'usd-rate',eurRate:'eur-rate',gbpRate:'gbp-rate'})) if (rates[key]) $(`#${id}`).value = rates[key];
+  $('#use-cnb').checked = rates?.useCnb ?? true;
+  void applyCnbRates();
   renderSearches(); $('#saved-count').textContent = favorites.length;
   const activeId = readLocal('lovec-active-job', null);
   if (activeId) { try { job = await api(`/api/search/${activeId}`); renderJob(); if (job.status === 'running') poll(); } catch { localStorage.removeItem('lovec-active-job'); } }

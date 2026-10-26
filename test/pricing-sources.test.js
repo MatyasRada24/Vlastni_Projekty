@@ -45,6 +45,17 @@ test('Net estimate subtracts repair per defect, shipping, fees and import costs'
   assert.equal(mergeCosts({ repair:{ display:-5 } }).repair.display, 1800);
 });
 
+test('eBay imports from outside the EU add VAT and clearance; ČNB list is parsed per unit', async ()=>{
+  const { importCost } = await import('../public/pricing.js');
+  const { parseCnb } = await import('../src/rates.js');
+  assert.equal(importCost({source:'ebay',country:'US',priceCzk:4000,shippingCzk:1000}), 5000 * 0.21 + 350);
+  assert.equal(importCost({source:'ebay',country:'DE',priceCzk:4000,shippingCzk:1000}), 0);
+  assert.equal(importCost({source:'bazos',country:null,priceCzk:4000}), 0);
+  const cnb = parseCnb('26.10.2026 #206\nzemě|měna|množství|kód|kurz\nEMU|euro|1|EUR|24,365\nJaponsko|jen|100|JPY|14,5\nUSA|dolar|1|USD|21,782\nVelká Británie|libra|1|GBP|29,064');
+  assert.deepEqual(cnb, { date:'2026-10-26', rates:{ EUR:24.365, USD:21.782, GBP:29.064 } });
+  assert.throws(() => parseCnb('<html>chyba</html>'));
+});
+
 test('Missing hardware does not trigger network requests but exposes both manual search links',async()=>{
   const value=await lookupNewPrice({model:'LOQ 15IRH8'},new AbortController().signal,{getPage:async()=>{throw new Error('must not fetch');}});
   assert.equal(value.status,'insufficient');assert.equal(value.searchLinks.length,2);

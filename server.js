@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { searchSchema, categories } from './src/schema.js';
 import { runAgent } from './src/agent.js';
 import { priceRetailers } from './src/valuation.js';
+import { cnbRates } from './src/rates.js';
 
 const jobs = new Map();
 const staticFiles = { '/': ['index.html','text/html'], '/app.js': ['app.js','text/javascript'], '/pricing.js':['pricing.js','text/javascript'], '/style.css': ['style.css','text/css'], '/favicon.svg':['favicon.svg','image/svg+xml'], '/fonts/fonts.css':['fonts/fonts.css','text/css'] };
@@ -44,6 +45,10 @@ export function createServer() {
         aiConfigured: Boolean(process.env.OPENAI_API_KEY), ebayConfigured: Boolean(process.env.EBAY_ACCESS_TOKEN || (process.env.EBAY_CLIENT_ID && process.env.EBAY_CLIENT_SECRET)),
         categories: Object.entries(categories).map(([id, { label }]) => ({ id, label })),
       });
+      if (req.method === 'GET' && path === '/api/rates') {
+        try { return send(200, await cnbRates()); }
+        catch { return send(502, { error: 'Kurzy ČNB se nepodařilo načíst. Použij ruční kurzy.' }); }
+      }
       if (req.method === 'POST' && path === '/api/search') {
         const parsed = searchSchema.safeParse(await readBody(req));
         if (!parsed.success) return send(400, { error: 'Zkontroluj filtry.', details: parsed.error.issues.map(x => x.message).join(' ') });
