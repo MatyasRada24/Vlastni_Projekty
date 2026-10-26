@@ -1,6 +1,7 @@
 import { normalize } from './schema.js';
 import { hasTerm, groupMatches, productGroups } from './vocabulary.js';
 import { extractHardware, hardwareMatches } from './hardware.js';
+import { classifyListing } from './defects.js';
 
 const defectTerms = ['nefunkcni','nefunkcnost','nezapina','nejde zapnout','nenabiha','nejde obraz','bez obrazu','rozbity','rozbita','rozbite','poskozeny','poskozena','poskozene','vadny','vadna','vadne','na opravu','na dily','nefunkc','broken','faulty','not working','for parts','spares or repair','does not power','cracked screen','praskly displej','praskla obrazovka','netestovan','untested'];
 
@@ -82,11 +83,14 @@ export function evaluate(item, plan, filters) {
   if (!item.detailRead) warnings.push('Shoda vychází z názvu a dostupného výpisu, ne z celého popisu.');
   if (evidence.some(x => /netest|untested/.test(x))) warnings.push('Netestované není potvrzení konkrétní závady.');
   if (evidence.length) warnings.push('Projev závady je tvrzení inzerátu, nikoli diagnóza.');
+  const { defects, risks } = classifyListing(item);
+  if (evidence.length && !defects.length) defects.push({ id:'unknown', label:'Závada neuvedena' });
+  if (risks.some(r => r.level === 'block')) warnings.unshift('Možný zámek nebo blokace: kus může být použitelný jen na díly. Ověř u prodejce.');
   const reasons = ['Odpovídá hledaným výrazům'];
   if (evidence.length) reasons.push(`Zmínka o stavu: ${evidence.slice(0,3).join(', ')}`);
   if (filters.maxPrice !== null && priceCzk !== null) reasons.push('V nastaveném cenovém limitu (bez dopravy)');
   // Ranking is text relevance, never profitability or diagnostic confidence.
   const titleHits = plan.termGroups.filter(g => groupMatches({title:item.title},g,plan.category)).length;
   const score = Math.min(100, 50 + titleHits * 10 + Math.min(evidence.length,2) * 10 + (item.detailRead ? 5 : 0));
-  return { ...item, specs, priceCzk, shippingCzk: item.shipping !== null && rate ? Math.round(item.shipping * rate) : null, score, evidence, reasons, warnings };
+  return { ...item, specs, priceCzk, shippingCzk: item.shipping !== null && rate ? Math.round(item.shipping * rate) : null, score, evidence, defects, risks, reasons, warnings };
 }

@@ -46,7 +46,11 @@ function restoreFilters(data) {
   if (data.sources) document.querySelectorAll('[name=source]').forEach(x => { x.checked = data.sources.includes(x.value); });
 }
 function visibleItems() {
-  const items = (savedView ? favorites : job?.items ?? []).filter(item => currentSource === 'all' || item.source === currentSource).map(effectiveItem);
+  const defect = $('#defect-filter').value, hideRisky = $('#hide-risky').checked;
+  const items = (savedView ? favorites : job?.items ?? []).filter(item => currentSource === 'all' || item.source === currentSource)
+    .filter(item => !defect || (item.defects ?? []).some(d => d.id === defect))
+    .filter(item => !hideRisky || !(item.risks ?? []).some(r => r.level === 'block'))
+    .map(effectiveItem);
   const sort = $('#sort').value;
   const endTime = item => Date.parse(item.endAt) > Date.now() ? Date.parse(item.endAt) : Infinity;
   if (sort === 'ending') return [...items].sort((a,b) => endTime(a) - endTime(b) || b.score - a.score);
@@ -72,6 +76,12 @@ setInterval(() => document.querySelectorAll('.ends[data-end]').forEach(el => {
   const state = endState(el.dataset.end);
   if (state) { el.dataset.level = state.level; el.querySelector('b').textContent = state.text; }
 }), 30000);
+
+function issuesHtml(item) {
+  const defects = item.defects ?? [], risks = item.risks ?? [];
+  if (!defects.length && !risks.length) return '';
+  return `<div class="issues">${risks.map(r => `<span class="risk" data-level="${escapeHtml(r.level)}">${r.level === 'block' ? '⛔' : '⚠'} ${escapeHtml(r.label)}</span>`).join('')}${defects.map(d => `<span class="defect">${escapeHtml(d.label)}</span>`).join('')}</div>`;
+}
 
 function hardwareHtml(item) {
   if (!item.specs) return '';
@@ -135,7 +145,7 @@ function renderItems() {
     const saleType = { auction:'Aukce · aktuální příhoz', fixed:'Kup teď', classified:'Inzerát', unknown:'Typ prodeje neověřen' }[item.saleType];
     return `<article class="listing" data-id="${escapeHtml(item.id)}">
       ${item.image ? `<img class="listing-image" loading="lazy" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" referrerpolicy="no-referrer">` : '<div class="listing-image image-placeholder">Bez fotografie</div>'}
-      <div><div class="listing-meta"><span class="source-tag">${escapeHtml(names[item.source])}</span><span>·</span><span>${escapeHtml(item.location || 'Lokalita neuvedena')}</span><span>·</span><span>Textová shoda ${item.score}/100</span></div><h3><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a></h3><p class="listing-desc">${escapeHtml(item.description || 'Ve výpisu není podrobný popis.')}</p>${hardwareHtml(item)}<div class="reasons">${item.reasons.map(r => `<span class="reason">${escapeHtml(r)}</span>`).join('')}</div><details><summary>Co ještě ověřit (${item.warnings.length})</summary><ul>${item.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>${item.endAt ? `<p>Konec: ${escapeHtml(new Date(item.endAt).toLocaleString('cs-CZ'))}</p>` : ''}</details></div>
+      <div><div class="listing-meta"><span class="source-tag">${escapeHtml(names[item.source])}</span><span>·</span><span>${escapeHtml(item.location || 'Lokalita neuvedena')}</span><span>·</span><span>Textová shoda ${item.score}/100</span></div><h3><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a></h3><p class="listing-desc">${escapeHtml(item.description || 'Ve výpisu není podrobný popis.')}</p>${issuesHtml(item)}${hardwareHtml(item)}<div class="reasons">${item.reasons.map(r => `<span class="reason">${escapeHtml(r)}</span>`).join('')}</div><details><summary>Co ještě ověřit (${item.warnings.length})</summary><ul>${item.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>${item.endAt ? `<p>Konec: ${escapeHtml(new Date(item.endAt).toLocaleString('cs-CZ'))}</p>` : ''}</details></div>
       <div class="listing-price"><span class="price">${item.priceCzk === null ? 'Cena neznámá' : `${item.currency !== 'CZK' ? '≈ ' : ''}${money(item.priceCzk)} Kč`}</span>${item.currency !== 'CZK' && item.price !== null ? `<span class="original-price">${money(item.price)} ${escapeHtml(item.currency)}</span>` : ''}<span class="price-note">${escapeHtml(saleType)}</span>${endHtml(item.endAt)}<span class="price-note">${item.shippingCzk === null ? 'Doprava nezjištěna' : `Doprava od ${money(item.shippingCzk)} Kč`}</span><a class="primary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Otevřít nabídku <span>↗</span></a><button class="bookmark ${saved ? 'saved' : ''}" data-save="${escapeHtml(item.id)}">${saved ? '★ Uloženo' : '☆ Uložit'}</button></div>
       ${valuationHtml(item)}
     </article>`;
@@ -195,6 +205,8 @@ $('#search-form').addEventListener('submit', async event => {
 $('#cancel-button').addEventListener('click', async () => { if (!job) return; try { await api(`/api/search/${job.id}/cancel`, { method:'POST', body:'{}' }); toast('Zastavuji vyhledávání…'); } catch(e) { showError(e.message); } });
 $('#source-tabs').addEventListener('click', event => { const tab = event.target.closest('[data-source]'); if (!tab) return; currentSource = tab.dataset.source; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === tab)); renderItems(); });
 $('#sort').addEventListener('change', renderItems);
+$('#defect-filter').addEventListener('change', renderItems);
+$('#hide-risky').addEventListener('change', renderItems);
 $('#results').addEventListener('click', event => {
   const example = event.target.closest('[data-prompt]');
   if (example) { $('#prompt').value = example.dataset.prompt; $('#prompt').focus(); return; }
