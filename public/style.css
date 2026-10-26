@@ -309,6 +309,15 @@ dialog code{font-family:var(--mono);background:var(--surface-2);border:1px solid
 .cost-grid label{font-size:12px}
 #reset-costs{margin:0 16px 0 0}
 .valuation-math .calculation small{display:block;font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:4px}
+.watch-status{background:var(--surface-2);border-radius:12px;padding:10px 14px}
+.watch-buttons{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 4px}
+.watch-alerts{display:grid;gap:8px;margin:12px 0;max-height:320px;overflow:auto}
+.watch-alert{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;font-size:14px}
+.watch-alert[data-seen=false]{border-color:var(--accent);background:var(--accent-soft)}
+.watch-alert a{font-weight:600;text-decoration:none;overflow-wrap:anywhere}
+.watch-alert a:hover{color:var(--accent)}
+.watch-alert strong{font-family:var(--mono);white-space:nowrap}
+.watch-alert small{grid-column:1/-1;color:var(--muted);font-size:12px}
 .rate-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 22px}
 .help-list{padding-left:22px}
 .help-list li{margin-bottom:12px;padding-left:4px}

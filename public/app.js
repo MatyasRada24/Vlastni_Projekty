@@ -321,6 +321,41 @@ function readCosts() {
 $('#settings-button').addEventListener('click', () => { renderCosts(costs); $('#settings').showModal(); });
 $('#reset-costs').addEventListener('click', () => renderCosts(mergeCosts(null)));
 $('#help-button').addEventListener('click', () => $('#help').showModal());
+
+let watchState = null, notifiedAlerts = new Set();
+const timeText = iso => iso ? new Date(iso).toLocaleString('cs-CZ', { day:'numeric', month:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+function renderWatch(state) {
+  watchState = state;
+  const unseen = state.alerts.filter(a => !a.seen);
+  $('#watch-count').hidden = !unseen.length; $('#watch-count').textContent = unseen.length;
+  const c = state.config;
+  $('#watch-status').textContent = !c?.enabled ? 'Hlídání je vypnuté.' : state.running ? `Právě hledám: „${c.filters.prompt}“…` : `Hlídám „${c.filters.prompt}“ · ${c.intervalMinutes >= 60 ? `každé ${c.intervalMinutes / 60} h` : `každých ${c.intervalMinutes} min`} · poslední běh ${timeText(state.lastRun)} · další ${timeText(state.nextRun)}${state.lastError ? ` · ${state.lastError}` : ''}`;
+  if (c) { $('#watch-interval').value = c.intervalMinutes; $('#watch-min-profit').value = c.minProfit ?? ''; }
+  $('#watch-stop').disabled = !c?.enabled;
+  $('#watch-alerts').innerHTML = state.alerts.length ? state.alerts.map(a => `<div class="watch-alert" data-seen="${a.seen}"><a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(a.title)} ↗</a><strong>${a.priceCzk == null ? '—' : `${money(a.priceCzk)} Kč`}</strong><small>${escapeHtml(names[a.source] ?? a.source)} · ${a.reason === 'new' ? 'nová nabídka' : `zlevněno z ${money(a.previousPrice)} Kč`}${a.grossProfit != null ? ` · hrubý rozdíl ${money(a.grossProfit)} Kč` : ''} · ${timeText(a.foundAt)}</small></div>`).join('') : '<p class="subtle">Zatím žádná upozornění.</p>';
+  // Browser notifications only for alerts this page has not announced yet.
+  const fresh = unseen.filter(a => !notifiedAlerts.has(`${a.id}:${a.priceCzk}`));
+  fresh.forEach(a => notifiedAlerts.add(`${a.id}:${a.priceCzk}`));
+  if (fresh.length && document.visibilityState !== 'visible' && 'Notification' in window && Notification.permission === 'granted') {
+    new Notification(`Lovec nabídek: ${fresh.length} ${fresh.length === 1 ? 'nová nabídka' : 'nových nabídek'}`, { body: fresh.slice(0,3).map(a => a.title).join('\n'), icon:'/favicon.svg' });
+  }
+}
+async function refreshWatch() { try { renderWatch(await api('/api/watch')); } catch {} }
+async function saveWatch(enabled) {
+  const data = filters();
+  if (enabled && !data.prompt) return showError('Vyplň zadání hledání, které se má hlídat.');
+  if (enabled && 'Notification' in window && Notification.permission === 'default') { try { await Notification.requestPermission(); } catch {} }
+  const minProfit = $('#watch-min-profit').value.trim() === '' ? null : Number($('#watch-min-profit').value);
+  try {
+    renderWatch(await api('/api/watch', { method:'POST', body: JSON.stringify({ enabled, intervalMinutes:Number($('#watch-interval').value), minProfit, filters: enabled ? data : (watchState?.config?.filters ?? data) }) }));
+    toast(enabled ? 'Hlídání je zapnuté. První kontrola proběhne po uplynutí intervalu.' : 'Hlídání je vypnuté.');
+  } catch (error) { $('#watch-status').textContent = error.message; }
+}
+$('#watch-button').addEventListener('click', async () => { await refreshWatch(); $('#watch').showModal(); if (watchState?.alerts.some(a => !a.seen)) { try { const state = await api('/api/watch/seen', { method:'POST', body:'{}' }); watchState = state; $('#watch-count').hidden = true; } catch {} } });
+$('#watch-start').addEventListener('click', () => saveWatch(true));
+$('#watch-stop').addEventListener('click', () => saveWatch(false));
+$('#watch-clear').addEventListener('click', async () => { try { renderWatch(await api('/api/watch/clear', { method:'POST', body:'{}' })); } catch (error) { showError(error.message); } });
+setInterval(refreshWatch, 60000);
 $('#settings').addEventListener('close', () => { if ($('#settings').returnValue === 'save') { writeLocal('lovec-rates', { useCnb: $('#use-cnb').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value) }); costs = readCosts(); writeLocal('lovec-costs', costs); lastResultsKey = ''; renderItems(); toast('Náklady jsou přepočítané. Kurzy se použijí při příštím hledání.'); } });
 function renderSearches() { $('#saved-searches').innerHTML = '<option value="">Vyber uložené…</option>' + searches.map((s,i) => `<option value="${i}">${escapeHtml(s.prompt)}</option>`).join(''); }
 $('#save-search').addEventListener('click', () => { const data = filters(); if (!data.prompt) return; searches = [data, ...searches.filter(s => JSON.stringify(s) !== JSON.stringify(data))].slice(0,20); writeLocal('lovec-searches', searches); renderSearches(); toast('Hledání uloženo v prohlížeči.'); });
@@ -343,6 +378,7 @@ try {
   const rates = readLocal('lovec-rates', null); if (rates) for (const [key,id] of Object.entries({usdRate:'usd-rate',eurRate:'eur-rate',gbpRate:'gbp-rate'})) if (rates[key]) $(`#${id}`).value = rates[key];
   $('#use-cnb').checked = rates?.useCnb ?? true;
   try { hiddenListings = await api('/api/hidden'); } catch {}
+  void refreshWatch();
   void applyCnbRates();
   renderSearches(); $('#saved-count').textContent = favorites.length;
   const activeId = readLocal('lovec-active-job', null);

@@ -7,6 +7,7 @@ import { runAgent } from './src/agent.js';
 import { priceRetailers } from './src/valuation.js';
 import { cnbRates } from './src/rates.js';
 import { store } from './src/store.js';
+import { createWatcher, watchSchema } from './src/watch.js';
 
 const jobs = new Map();
 const staticFiles = { '/': ['index.html','text/html'], '/app.js': ['app.js','text/javascript'], '/pricing.js':['pricing.js','text/javascript'], '/style.css': ['style.css','text/css'], '/favicon.svg':['favicon.svg','image/svg+xml'], '/fonts/fonts.css':['fonts/fonts.css','text/css'] };
@@ -15,6 +16,7 @@ for (const family of ['geist','geist-mono','bricolage-grotesque']) for (const su
   staticFiles[`/${file}`] = [file,'font/woff2'];
 }
 const publicJob = ({ controller, ...job }) => job;
+const watcher = createWatcher({ store, runAgent, jobs });
 
 async function readBody(req) {
   if (!req.headers['content-type']?.startsWith('application/json')) throw Object.assign(new Error('Očekáván JSON.'), { status: 415 });
@@ -46,6 +48,14 @@ export function createServer() {
         aiConfigured: Boolean(process.env.OPENAI_API_KEY), ebayConfigured: Boolean(process.env.EBAY_ACCESS_TOKEN || (process.env.EBAY_CLIENT_ID && process.env.EBAY_CLIENT_SECRET)),
         categories: Object.entries(categories).map(([id, { label }]) => ({ id, label })),
       });
+      if (path === '/api/watch' && req.method === 'GET') return send(200, await watcher.status());
+      if (path === '/api/watch' && req.method === 'POST') {
+        const parsed = watchSchema.safeParse(await readBody(req));
+        if (!parsed.success) return send(400, { error: 'Zkontroluj nastavení hlídání.', details: parsed.error.issues.map(x => x.message).join(' ') });
+        return send(200, await watcher.configure(parsed.data));
+      }
+      if (path === '/api/watch/seen' && req.method === 'POST') { await readBody(req); return send(200, await watcher.markSeen()); }
+      if (path === '/api/watch/clear' && req.method === 'POST') { await readBody(req); return send(200, await watcher.clear()); }
       if (path === '/api/hidden') {
         if (req.method === 'GET') return send(200, await store.hidden());
         if (req.method === 'POST') {
@@ -61,7 +71,8 @@ export function createServer() {
       if (req.method === 'POST' && path === '/api/search') {
         const parsed = searchSchema.safeParse(await readBody(req));
         if (!parsed.success) return send(400, { error: 'Zkontroluj filtry.', details: parsed.error.issues.map(x => x.message).join(' ') });
-        if ([...jobs.values()].some(j => j.status === 'running')) return send(409, { error: 'Jiné vyhledávání právě běží. Vyčkej na dokončení.' });
+        const busy = [...jobs.values()].find(j => j.status === 'running');
+        if (busy) return send(409, { error: busy.watch ? 'Právě běží hlídání uloženého hledání. Zkus to za pár minut.' : 'Jiné vyhledávání právě běží. Vyčkej na dokončení.' });
         while (jobs.size >= 20) jobs.delete(jobs.keys().next().value);
         const job = { id: randomUUID(), status: 'running', phase: 'Připravuji hledání', createdAt: new Date().toISOString(), filters: parsed.data, plan: null, sources: {}, items: [], scanned: 0, controller: new AbortController() };
         jobs.set(job.id, job);
@@ -88,4 +99,5 @@ export function createServer() {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT || 3210);
   createServer().listen(port, '127.0.0.1', () => console.log(`Lovec nabídek běží na http://127.0.0.1:${port}`));
+  void watcher.init();
 }
