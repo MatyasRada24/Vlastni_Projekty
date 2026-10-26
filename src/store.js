@@ -62,4 +62,4 @@ export function createStore(dir = fileURLToPath(new URL('../data/', import.meta.
 }
 
 // Test runs never touch the user's real data/ folder.
-export const store = createStore(process.env.NODE_TEST_CONTEXT ? join(tmpdir(), `lovec-test-${process.pid}`) : undefined);
+export const store = createStore(process.env.NODE_TEST_CONTEXT || process.execArgv.includes('--test') ?join(tmpdir(), `lovec-test-${process.pid}`) : undefined);
