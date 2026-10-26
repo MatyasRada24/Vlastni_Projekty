@@ -181,6 +181,10 @@ h1 span{color:var(--muted);font-weight:500}
 @media(prefers-color-scheme:light){img.listing-image{mix-blend-mode:multiply}}
 .image-placeholder{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--muted)}
 .listing-meta{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.5}
+.history-tag{font-family:var(--sans);font-size:12px;font-weight:600;padding:1px 8px;border-radius:6px;background:var(--surface-2);color:var(--ink-2)}
+.history-tag.new{background:var(--accent-soft);color:var(--accent-strong)}
+.history-tag.down{background:var(--gain-soft);color:var(--gain)}
+.card-actions{display:flex;gap:14px;justify-content:flex-end}
 .source-tag{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--ink);padding:1px 8px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px}
 .listing h3{font-size:19px;letter-spacing:-.015em;line-height:1.35;font-weight:600;margin:10px 0 8px;overflow-wrap:anywhere;text-wrap:pretty}
 .listing h3 a{text-decoration:none}

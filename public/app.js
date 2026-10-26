@@ -52,8 +52,10 @@ function restoreFilters(data) {
   if (data.sources) document.querySelectorAll('[name=source]').forEach(x => { x.checked = data.sources.includes(x.value); });
 }
 function visibleItems() {
-  const defect = $('#defect-filter').value, hideRisky = $('#hide-risky').checked;
+  const defect = $('#defect-filter').value, hideRisky = $('#hide-risky').checked, showHidden = $('#show-hidden').checked, onlyNew = $('#only-new').checked;
   const items = (savedView ? favorites : job?.items ?? []).filter(item => currentSource === 'all' || item.source === currentSource)
+    .filter(item => savedView || showHidden || !hiddenListings[item.id])
+    .filter(item => !onlyNew || item.history?.isNew || item.history?.priceChange < 0)
     .filter(item => !defect || (item.defects ?? []).some(d => d.id === defect))
     .filter(item => !hideRisky || !(item.risks ?? []).some(r => r.level === 'block'))
     .map(effectiveItem);
@@ -82,6 +84,16 @@ setInterval(() => document.querySelectorAll('.ends[data-end]').forEach(el => {
   const state = endState(el.dataset.end);
   if (state) { el.dataset.level = state.level; el.querySelector('b').textContent = state.text; }
 }), 30000);
+
+let hiddenListings = {};
+function historyHtml(item) {
+  const h = item.history;
+  if (!h) return '';
+  if (h.priceChange < 0) return `<span class="history-tag down" title="Dříve ${money(h.previousPrice)} Kč">Zlevněno o ${money(-h.priceChange)} Kč</span>`;
+  if (h.priceChange > 0) return `<span class="history-tag" title="Dříve ${money(h.previousPrice)} Kč">Zdraženo o ${money(h.priceChange)} Kč</span>`;
+  if (h.isNew) return '<span class="history-tag new">Nové</span>';
+  return `<span title="Poprvé viděno">od ${escapeHtml(new Date(h.firstSeen).toLocaleDateString('cs-CZ'))}</span>`;
+}
 
 function issuesHtml(item) {
   const defects = item.defects ?? [], risks = item.risks ?? [];
@@ -161,8 +173,8 @@ function renderItems() {
     const saleType = { auction:'Aukce · aktuální příhoz', fixed:'Kup teď', classified:'Inzerát', unknown:'Typ prodeje neověřen' }[item.saleType];
     return `<article class="listing" data-id="${escapeHtml(item.id)}">
       ${item.image ? `<img class="listing-image" loading="lazy" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" referrerpolicy="no-referrer">` : '<div class="listing-image image-placeholder">Bez fotografie</div>'}
-      <div><div class="listing-meta"><span class="source-tag">${escapeHtml(names[item.source])}</span><span>·</span><span>${escapeHtml(item.location || 'Lokalita neuvedena')}</span><span>·</span><span>Textová shoda ${item.score}/100</span></div><h3><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a></h3><p class="listing-desc">${escapeHtml(item.description || 'Ve výpisu není podrobný popis.')}</p>${issuesHtml(item)}${hardwareHtml(item)}<div class="reasons">${item.reasons.map(r => `<span class="reason">${escapeHtml(r)}</span>`).join('')}</div><details><summary>Co ještě ověřit (${item.warnings.length})</summary><ul>${item.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>${item.endAt ? `<p>Konec: ${escapeHtml(new Date(item.endAt).toLocaleString('cs-CZ'))}</p>` : ''}</details></div>
-      <div class="listing-price"><span class="price">${item.priceCzk === null ? 'Cena neznámá' : `${item.currency !== 'CZK' ? '≈ ' : ''}${money(item.priceCzk)} Kč`}</span>${item.currency !== 'CZK' && item.price !== null ? `<span class="original-price">${money(item.price)} ${escapeHtml(item.currency)}</span>` : ''}<span class="price-note">${escapeHtml(saleType)}</span>${endHtml(item.endAt)}<span class="price-note">${item.shippingCzk === null ? 'Doprava nezjištěna' : `Doprava od ${money(item.shippingCzk)} Kč`}</span><a class="primary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Otevřít nabídku <span>↗</span></a><button class="bookmark ${saved ? 'saved' : ''}" data-save="${escapeHtml(item.id)}">${saved ? '★ Uloženo' : '☆ Uložit'}</button></div>
+      <div><div class="listing-meta"><span class="source-tag">${escapeHtml(names[item.source])}</span>${historyHtml(item)}<span>·</span><span>${escapeHtml(item.location || 'Lokalita neuvedena')}</span><span>·</span><span>Textová shoda ${item.score}/100</span></div><h3><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a></h3><p class="listing-desc">${escapeHtml(item.description || 'Ve výpisu není podrobný popis.')}</p>${issuesHtml(item)}${hardwareHtml(item)}<div class="reasons">${item.reasons.map(r => `<span class="reason">${escapeHtml(r)}</span>`).join('')}</div><details><summary>Co ještě ověřit (${item.warnings.length})</summary><ul>${item.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>${item.endAt ? `<p>Konec: ${escapeHtml(new Date(item.endAt).toLocaleString('cs-CZ'))}</p>` : ''}</details></div>
+      <div class="listing-price"><span class="price">${item.priceCzk === null ? 'Cena neznámá' : `${item.currency !== 'CZK' ? '≈ ' : ''}${money(item.priceCzk)} Kč`}</span>${item.currency !== 'CZK' && item.price !== null ? `<span class="original-price">${money(item.price)} ${escapeHtml(item.currency)}</span>` : ''}<span class="price-note">${escapeHtml(saleType)}</span>${endHtml(item.endAt)}<span class="price-note">${item.shippingCzk === null ? 'Doprava nezjištěna' : `Doprava od ${money(item.shippingCzk)} Kč`}</span><a class="primary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Otevřít nabídku <span>↗</span></a><div class="card-actions"><button class="bookmark ${saved ? 'saved' : ''}" data-save="${escapeHtml(item.id)}">${saved ? '★ Uloženo' : '☆ Uložit'}</button><button class="bookmark" data-hide="${escapeHtml(item.id)}">${hiddenListings[item.id] ? 'Zrušit skrytí' : 'Skrýt'}</button></div></div>
       ${valuationHtml(item)}
     </article>`;
   }).join('');
@@ -222,6 +234,8 @@ $('#cancel-button').addEventListener('click', async () => { if (!job) return; tr
 $('#source-tabs').addEventListener('click', event => { const tab = event.target.closest('[data-source]'); if (!tab) return; currentSource = tab.dataset.source; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === tab)); renderItems(); });
 $('#sort').addEventListener('change', renderItems);
 $('#defect-filter').addEventListener('change', renderItems);
+$('#show-hidden').addEventListener('change', renderItems);
+$('#only-new').addEventListener('change', renderItems);
 $('#hide-risky').addEventListener('change', renderItems);
 $('#results').addEventListener('click', event => {
   const example = event.target.closest('[data-prompt]');
@@ -239,6 +253,14 @@ $('#results').addEventListener('click', event => {
     const id=remove.dataset.manualRemove, next={...manualPrices};delete next[id];
     if (!writeLocal('lovec-manual-prices',next)) return;
     manualPrices=next;editingPrices.delete(id);priceDrafts.delete(id);priceErrors.delete(id);renderItems();toast('Vlastní cena odstraněna. Používá se dostupný automatický podklad.');return;
+  }
+  const hide = event.target.closest('[data-hide]');
+  if (hide) {
+    const id = hide.dataset.hide, item = job?.items.find(x => x.id === id) ?? favorites.find(x => x.id === id);
+    api('/api/hidden', { method:'POST', body: JSON.stringify({ id, hidden: !hiddenListings[id], title: item?.title ?? '' }) })
+      .then(map => { const wasHidden = Boolean(hiddenListings[id]); hiddenListings = map; lastResultsKey = ''; renderItems(); toast(wasHidden ? 'Nabídka je znovu vidět.' : 'Nabídka skryta. Najdeš ji přes „Zobrazit skryté“.'); })
+      .catch(error => showError(error.message));
+    return;
   }
   const button = event.target.closest('[data-save]'); if (!button) return;
   const id = button.dataset.save;
@@ -314,6 +336,7 @@ try {
   const previous = readLocal('lovec-last-filters', null); if (previous) restoreFilters(previous.detailLimit === undefined ? { ...previous, pages: Math.max(20,previous.pages || 0), detailLimit:60 } : previous);
   const rates = readLocal('lovec-rates', null); if (rates) for (const [key,id] of Object.entries({usdRate:'usd-rate',eurRate:'eur-rate',gbpRate:'gbp-rate'})) if (rates[key]) $(`#${id}`).value = rates[key];
   $('#use-cnb').checked = rates?.useCnb ?? true;
+  try { hiddenListings = await api('/api/hidden'); } catch {}
   void applyCnbRates();
   renderSearches(); $('#saved-count').textContent = favorites.length;
   const activeId = readLocal('lovec-active-job', null);

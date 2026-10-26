@@ -6,6 +6,7 @@ import { searchSchema, categories } from './src/schema.js';
 import { runAgent } from './src/agent.js';
 import { priceRetailers } from './src/valuation.js';
 import { cnbRates } from './src/rates.js';
+import { store } from './src/store.js';
 
 const jobs = new Map();
 const staticFiles = { '/': ['index.html','text/html'], '/app.js': ['app.js','text/javascript'], '/pricing.js':['pricing.js','text/javascript'], '/style.css': ['style.css','text/css'], '/favicon.svg':['favicon.svg','image/svg+xml'], '/fonts/fonts.css':['fonts/fonts.css','text/css'] };
@@ -45,6 +46,14 @@ export function createServer() {
         aiConfigured: Boolean(process.env.OPENAI_API_KEY), ebayConfigured: Boolean(process.env.EBAY_ACCESS_TOKEN || (process.env.EBAY_CLIENT_ID && process.env.EBAY_CLIENT_SECRET)),
         categories: Object.entries(categories).map(([id, { label }]) => ({ id, label })),
       });
+      if (path === '/api/hidden') {
+        if (req.method === 'GET') return send(200, await store.hidden());
+        if (req.method === 'POST') {
+          const body = await readBody(req);
+          if (typeof body?.id !== 'string' || !/^(?:bazos|aukro|ebay):\S{1,300}$/.test(body.id) || typeof body.hidden !== 'boolean') return send(400, { error: 'Neplatná nabídka.' });
+          return send(200, await store.setHidden(body.id, body.hidden, typeof body.title === 'string' ? body.title : ''));
+        }
+      }
       if (req.method === 'GET' && path === '/api/rates') {
         try { return send(200, await cnbRates()); }
         catch { return send(502, { error: 'Kurzy ČNB se nepodařilo načíst. Použij ruční kurzy.' }); }

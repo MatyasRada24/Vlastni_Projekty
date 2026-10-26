@@ -2,6 +2,7 @@ import { createPlan } from './planner.js';
 import { collectSource } from './sources.js';
 import { evaluate } from './matching.js';
 import { enrichValuations } from './valuation.js';
+import { store } from './store.js';
 
 export async function runAgent(job, dependencies = {}) {
   const signal = job.controller.signal;
@@ -34,6 +35,7 @@ export async function runAgent(job, dependencies = {}) {
     job.items = [...unique.values()].map(item => evaluate(item, job.plan, job.filters)).filter(Boolean).sort((a,b) => b.score - a.score || (a.priceCzk ?? Infinity) - (b.priceCzk ?? Infinity));
     job.scanned = unique.size;
     if (!signal.aborted && job.filters.lookupNewPrices && job.plan.category === 'laptops') await enrichValuations(job,signal,{...dependencies,marketListings:[...unique.values()]});
+    if (dependencies.store !== null) await (dependencies.store ?? store).annotate(job.items).catch(() => {});
     job.status = signal.aborted ? 'cancelled' : 'done';
     job.phase = signal.aborted ? 'Zastaveno — dostupné výsledky zachovány' : 'Vyhledávání dokončeno';
   } catch (error) {
