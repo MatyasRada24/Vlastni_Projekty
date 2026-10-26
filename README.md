@@ -61,9 +61,20 @@ Cena se přijme pouze u produktu označeného jako nový a dostupný, s cenou CZ
 
 Například nový kus za 20 000 Kč a rozbitý za 4 000 Kč dávají hrubý rozdíl 11 000 Kč. Při požadovaném rozdílu 3 000 Kč je maximální nákup 12 000 Kč. Výpočet zachovává záporné výsledky a neznámou nákupní cenu. **Oprava, práce, doprava, clo a poplatky se podle zadaného vzorce neodečítají. Nejde o čistý zisk ani garantovanou prodejní cenu.** U aukce se používá aktuální příhoz. Požadovaný rozdíl mění doporučené maximum nákupu, neskrývá nabídky. Výsledky lze podle hrubého rozdílu seřadit a parametry i cenové podklady jsou součástí CSV.
 
+## Čistý odhad, závady a hlídání
+
+- **Závady a rizika** (`src/defects.js`): z textu inzerátu se určí typ závady (nezapne se, displej, BIOS, polití, deska, grafika, nabíjení, klávesnice, panty, baterie, netestováno) a rizika. Rizika „zámek BIOSu“, „iCloud“ a „blokace“ znamenají, že kus může být jen na díly; „chybí díly“, „bez nabíječky“ a „po pokusu o opravu“ jsou varování. Věty jako „bez hesla v BIOSu“ nebo „odhlášený z iCloudu“ se berou jako vyloučení rizika. Výsledky jde filtrovat podle typu závady a zamčené kusy skrýt.
+- **Čistý odhad** = odhad prodeje − nákup − doprava (u inzerátu bez údaje odhad) − oprava podle typu závady − poplatky − dovozní náklady. Více závad se sčítá. Částky jsou odhad, ne diagnóza, a upravíš je v dialogu „Připojení a náklady“ (ukládají se v prohlížeči).
+- **eBay mimo EU**: notebooky mají v EU nulové clo, přičítá se ale DPH 21 % z ceny a dopravy a poplatek dopravce za proclení. Měny se přepočítávají denním kurzem ČNB (`/api/rates`, mezipaměť 6 h); v nastavení lze přepnout na vlastní kurzy.
+- **Bazarová prodejní cena**: z inzerátů prohlédnutých v témže hledání (funkční, pevná cena v Kč) se počítá medián stejného modelu, CPU a GPU, potom stejného CPU a GPU, u Apple modelu a čipu. Odhad prodeje je 90 % mediánu. Úroveň „jen stejná dedikovaná grafika“ je hrubá a použije se jen tam, kde chybí cena nového.
+- **Paměť mezi běhy** (`data/store.json`, mimo git): kdy byl inzerát poprvé viděn a historie jeho ceny. Karty ukazují „Nové“, „Zlevněno o…“, filtr „Jen nové a zlevněné“. Nabídky lze skrýt; skryté se ukládají tamtéž.
+- **Vlastní cena nového** může platit pro všechny nabídky se stejným modelem, CPU a GPU.
+- **Kraj**: filtr podle kraje určeného z PSČ (podle poštovních okrsků, přibližně) nebo názvu krajského města.
+- **Hlídání**: uložené hledání se spouští v intervalu 30 min až 24 h, jen když běží server a souběžně neběží ruční hledání. Upozorní na nové nebo zlevněné kusy nad zvolený hrubý rozdíl; upozornění prohlížeče se zobrazí, dokud je stránka otevřená.
+
 ## Uložení a soukromí
 
-Posledních 20 běhů je v paměti procesu; restart je odstraní. Oblíbené nabídky, poslední filtry a až 20 uložených hledání jsou v `localStorage` aktuálního prohlížeče. Nejde o trvale synchronizovanou databázi. Uložená nabídka může později zmizet nebo změnit cenu. Klíče jsou jen v `.env`, který je v `.gitignore`. Fotografie se načítají přímo z původních zdrojů.
+Posledních 20 běhů je v paměti procesu; restart je odstraní. Historie nabídek, skryté nabídky a nastavení hlídání jsou v `data/store.json`; smazáním souboru se vynulují. Oblíbené nabídky, poslední filtry a až 20 uložených hledání jsou v `localStorage` aktuálního prohlížeče. Nejde o trvale synchronizovanou databázi. Uložená nabídka může později zmizet nebo změnit cenu. Klíče jsou jen v `.env`, který je v `.gitignore`. Fotografie se načítají přímo z původních zdrojů.
 
 ## Ověření
 
