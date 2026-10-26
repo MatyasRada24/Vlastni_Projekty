@@ -33,7 +33,7 @@ export async function runAgent(job, dependencies = {}) {
     const unique = new Map(sourceResults.flatMap(x => x.items).map(item => [item.id, item]));
     job.items = [...unique.values()].map(item => evaluate(item, job.plan, job.filters)).filter(Boolean).sort((a,b) => b.score - a.score || (a.priceCzk ?? Infinity) - (b.priceCzk ?? Infinity));
     job.scanned = unique.size;
-    if (!signal.aborted && job.filters.lookupNewPrices && job.plan.category === 'laptops') await enrichValuations(job,signal,dependencies);
+    if (!signal.aborted && job.filters.lookupNewPrices && job.plan.category === 'laptops') await enrichValuations(job,signal,{...dependencies,marketListings:[...unique.values()]});
     job.status = signal.aborted ? 'cancelled' : 'done';
     job.phase = signal.aborted ? 'Zastaveno — dostupné výsledky zachovány' : 'Vyhledávání dokončeno';
   } catch (error) {

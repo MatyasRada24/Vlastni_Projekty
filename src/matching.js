@@ -79,7 +79,7 @@ export function evaluate(item, plan, filters) {
   if (item.saleType === 'auction') warnings.push('Aktuální příhoz; konečná cena může vzrůst.');
   if (item.saleType === 'unknown') warnings.push('Typ prodeje se nepodařilo ověřit.');
   if (item.shipping === null) warnings.push('Cena dopravy není známá.');
-  if (item.currency !== 'CZK') warnings.push('Přepočet používá ručně nastavený kurz; daně, clo a další poplatky nejsou zahrnuty.');
+  if (item.currency !== 'CZK') warnings.push('Přepočet používá kurz z nastavení (ČNB nebo ruční); dovozní DPH a proclení jsou jen odhad.');
   if (!item.detailRead) warnings.push('Shoda vychází z názvu a dostupného výpisu, ne z celého popisu.');
   if (evidence.some(x => /netest|untested/.test(x))) warnings.push('Netestované není potvrzení konkrétní závady.');
   if (evidence.length) warnings.push('Projev závady je tvrzení inzerátu, nikoli diagnóza.');

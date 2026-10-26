@@ -13,7 +13,8 @@ const missingFields = specs => [['model','model'],['cpu','CPU'],['gpu','GPU']].f
 const insufficient = specs => ({status:'insufficient',message:`Pro dohledání ceny chybí ${missingFields(specs).join(', ') || 'výrobní označení'}. Doplň je ve vlastní ceně nebo hledej ručně.`,searchUrl:newPriceSearchUrl(specs)});
 const matchRank = {sku:0,configuration:1,partial:2};
 export { calculateProfit } from '../public/pricing.js';
-import { calculateProfit } from '../public/pricing.js';
+import { calculateProfit, calculateFromResale } from '../public/pricing.js';
+import { damageEvidence } from './matching.js';
 
 export function newPriceSearchUrl(specs, source = 'mironet') {
   const query = specs.sku || [specs.brand,specs.model].filter(Boolean).join(' ');
@@ -133,7 +134,48 @@ export async function lookupNewPrice(specs, signal, dependencies = {}) {
     blocked:reports.length > 0 && reports.every(r => r.blocked),message:reference ? 'Použita nejnižší ověřená cena z nejsilnější dostupné shody.' : 'Cenu nového kusu se nepodařilo potvrdit. Podrobnosti najdeš u jednotlivých obchodů.'};
 }
 
+const median = values => { const s = [...values].sort((a,b) => a-b), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2; };
+const part = v => normalize(v).replace(/[^a-z0-9]/g,'');
+// Exact model first; the same CPU + GPU across brands is the fallback, since performance drives used prices.
+const marketLevels = [
+  ['model', 'shodný model, CPU a GPU', s => s.model && s.cpu && s.gpu ? [s.model,s.cpu,s.gpu].map(part).join('|') : null],
+  ['hardware', 'stejné CPU a GPU (různé modely)', s => s.cpu && s.gpu ? [s.cpu,s.gpu].map(part).join('|') : null],
+  ['apple', 'shodný model a čip Apple', s => s.brand === 'APPLE' && s.model && s.cpu ? [s.model,s.cpu].map(part).join('|') : null],
+  // Coarse: price class of gaming laptops follows the dedicated GPU, but CPU and age still vary.
+  ['gpu', 'jen stejná dedikovaná grafika (hrubý odhad)', s => s.gpu && /^(?:RTX|GTX|RADEON RX)/.test(s.gpu) ? part(s.gpu) : null, 5],
+];
+export const marketFactor = 0.9;
+
+// Used-market reference from the listings already scanned in this run: working laptops, fixed price in CZK.
+// Asking prices run high, so the resale estimate is 90 % of the median.
+export function marketIndex(listings, minCount = 3) {
+  const groups = marketLevels.map(() => new Map());
+  for (const item of listings) {
+    if (item.currency !== 'CZK' || !Number.isFinite(item.price) || item.price < 1000 || item.saleType === 'auction' || damageEvidence(item).length) continue;
+    const specs = extractHardware(item);
+    marketLevels.forEach(([, , key], i) => {
+      const k = key(specs);
+      if (!k) return;
+      if (!groups[i].has(k)) groups[i].set(k, []);
+      groups[i].get(k).push({ title:item.title, url:item.url, priceCzk:item.price, source:item.source });
+    });
+  }
+  return specs => {
+    for (const [i, [level, label, key, levelMin = minCount]] of marketLevels.entries()) {
+      const all = groups[i].get(key(specs)) ?? [];
+      if (all.length < Math.max(minCount, levelMin)) continue;
+      const mid = median(all.map(x => x.priceCzk));
+      const kept = all.filter(x => x.priceCzk >= mid * 0.4 && x.priceCzk <= mid * 2.5);
+      if (kept.length < Math.max(minCount, levelMin)) continue;
+      const value = median(kept.map(x => x.priceCzk));
+      return { level, label, median: value, count: kept.length, resale: Math.round(value * marketFactor), listings: kept.sort((a,b) => a.priceCzk - b.priceCzk).slice(0, 8) };
+    }
+    return null;
+  };
+}
+
 export async function enrichValuations(job, signal, dependencies = {}) {
+  const market = marketIndex(dependencies.marketListings ?? []);
   const lookup = dependencies.lookupNewPrice ?? lookupNewPrice;
   const cache = new Map();
   const limit = job.filters.priceLookupLimit ?? 30;
@@ -158,9 +200,12 @@ export async function enrichValuations(job, signal, dependencies = {}) {
       cache.set(key,value);
     }
     item.valuation = {...value};
-    if (value.reference) {
-      item.valuation.calculation = calculateProfit(value.reference.priceCzk,item.priceCzk,job.filters.targetProfit ?? 0);
-      job.valuationProgress.matched++;
-    }
+    const used = market(item.specs);
+    if (used) item.valuation.market = used;
+    // A real used-market median beats a fixed share of the new price; the new price stays as context.
+    // The coarse GPU-only median is used only when no new price is available.
+    if (used && (used.level !== 'gpu' || !value.reference)) item.valuation.calculation = calculateFromResale(used.resale,item.priceCzk,job.filters.targetProfit ?? 0,`Bazarová cena · medián ${used.count} nabídek × ${String(marketFactor).replace('.',',')}`);
+    else if (value.reference) item.valuation.calculation = calculateProfit(value.reference.priceCzk,item.priceCzk,job.filters.targetProfit ?? 0);
+    if (item.valuation.calculation) job.valuationProgress.matched++;
   }
 }

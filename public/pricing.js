@@ -2,10 +2,16 @@ const round = value => Math.round((value + Number.EPSILON) * 100) / 100;
 
 export function calculateProfit(newPriceCzk, purchasePriceCzk, targetProfit = 0) {
   if (!Number.isFinite(newPriceCzk) || newPriceCzk <= 0) return null;
+  return calculateFromResale(newPriceCzk * 0.75, purchasePriceCzk, targetProfit);
+}
+
+export function calculateFromResale(resaleCzk, purchasePriceCzk, targetProfit = 0, resaleLabel) {
+  if (!Number.isFinite(resaleCzk) || resaleCzk <= 0) return null;
   return {
-    resaleEstimate: round(newPriceCzk * 0.75),
-    grossProfit: Number.isFinite(purchasePriceCzk) && purchasePriceCzk >= 0 ? round(newPriceCzk * 0.75 - purchasePriceCzk) : null,
-    maxPurchasePrice: round(newPriceCzk * 0.75 - targetProfit), targetProfit,
+    resaleEstimate: round(resaleCzk),
+    grossProfit: Number.isFinite(purchasePriceCzk) && purchasePriceCzk >= 0 ? round(resaleCzk - purchasePriceCzk) : null,
+    maxPurchasePrice: round(resaleCzk - targetProfit), targetProfit,
+    ...(resaleLabel ? { resaleLabel } : {}),
   };
 }
 

@@ -56,6 +56,20 @@ test('eBay imports from outside the EU add VAT and clearance; ČNB list is parse
   assert.throws(() => parseCnb('<html>chyba</html>'));
 });
 
+test('Used-market resale uses the median of working same-config listings and ignores broken, auctions and outliers', async ()=>{
+  const { marketIndex, enrichValuations } = await import('../src/valuation.js');
+  const ad = (price, extra = {}) => ({ title:'Lenovo Legion 5 15ACH6H Ryzen 7 5800H RTX 3060', description:'Plně funkční', price, currency:'CZK', saleType:'classified', source:'bazos', url:`https://pc.bazos.cz/inzerat/${price}/`, ...extra });
+  const listings = [ad(14000), ad(15000), ad(16000), ad(900000), ad(3000, {description:'Nefunkční, nezapne se'}), ad(9000, {saleType:'auction'})];
+  const lookup = marketIndex(listings);
+  const specs = { model:'LEGION 5 15ACH6H', cpu:'RYZEN 7 5800H', gpu:'RTX 3060' };
+  assert.deepEqual([lookup(specs).median, lookup(specs).count, lookup(specs).resale], [15000, 3, 13500]);
+  assert.equal(marketIndex(listings.slice(0, 2))(specs), null);
+  const job = { filters:{ targetProfit:0, priceLookupLimit:5 }, items:[{ priceCzk:5000, specs:{...specs, ramGb:null} }] };
+  await enrichValuations(job, new AbortController().signal, { marketListings:listings, lookupNewPrice:async()=>({ status:'not_found', offers:[], reports:[] }) });
+  assert.equal(job.items[0].valuation.calculation.resaleEstimate, 13500);
+  assert.equal(job.items[0].valuation.calculation.grossProfit, 8500);
+});
+
 test('Missing hardware does not trigger network requests but exposes both manual search links',async()=>{
   const value=await lookupNewPrice({model:'LOQ 15IRH8'},new AbortController().signal,{getPage:async()=>{throw new Error('must not fetch');}});
   assert.equal(value.status,'insufficient');assert.equal(value.searchLinks.length,2);
