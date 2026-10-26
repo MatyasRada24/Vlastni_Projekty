@@ -1,4 +1,4 @@
-import {calculateProfit, validateManualPrice, withManualPrice} from './pricing.js';
+import {calculateProfit, calculateNet, mergeCosts, costLabels, validateManualPrice, withManualPrice} from './pricing.js';
 const $ = selector => document.querySelector(selector);
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, x => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[x]));
 const money = value => new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 2 }).format(value);
@@ -12,7 +12,13 @@ let job = null, currentSource = 'all', savedView = false, config = {}, polling =
 let manualPrices = readLocal('lovec-manual-prices', {});
 if (!manualPrices || typeof manualPrices !== 'object' || Array.isArray(manualPrices)) manualPrices = {};
 const editingPrices = new Set(), priceDrafts = new Map(), priceErrors = new Map();
-const effectiveItem = item => withManualPrice(item,manualPrices[item.id],item.valuation?.calculation?.targetProfit ?? job?.filters?.targetProfit ?? 0);
+let costs = mergeCosts(readLocal('lovec-costs', null));
+const effectiveItem = item => {
+  const target = item.valuation?.calculation?.targetProfit ?? job?.filters?.targetProfit ?? 0;
+  const priced = withManualPrice(item,manualPrices[item.id],target);
+  return {...priced, net: calculateNet(priced.valuation?.calculation?.resaleEstimate, priced, costs, target)};
+};
+const bestProfit = item => item.net?.netProfit ?? item.valuation?.calculation?.grossProfit;
 const initialEmptyState = $('#results').innerHTML;
 let displayedLimit = 100, lastResultsKey = '';
 const moreButton = document.createElement('button');
@@ -54,7 +60,7 @@ function visibleItems() {
   const sort = $('#sort').value;
   const endTime = item => Date.parse(item.endAt) > Date.now() ? Date.parse(item.endAt) : Infinity;
   if (sort === 'ending') return [...items].sort((a,b) => endTime(a) - endTime(b) || b.score - a.score);
-  return [...items].sort((a,b) => sort === 'profit' ? (b.valuation?.calculation?.grossProfit ?? -Infinity) - (a.valuation?.calculation?.grossProfit ?? -Infinity) : sort === 'price' ? (a.priceCzk ?? Infinity) - (b.priceCzk ?? Infinity) : sort === 'price-desc' ? (b.priceCzk ?? -Infinity) - (a.priceCzk ?? -Infinity) : b.score - a.score);
+  return [...items].sort((a,b) => sort === 'profit' ? (bestProfit(b) ?? -Infinity) - (bestProfit(a) ?? -Infinity) : sort === 'price' ? (a.priceCzk ?? Infinity) - (b.priceCzk ?? Infinity) : sort === 'price-desc' ? (b.priceCzk ?? -Infinity) - (a.priceCzk ?? -Infinity) : b.score - a.score);
 }
 
 // Aukro and eBay report an end time; Bazoš classifieds run until the seller removes them.
@@ -113,14 +119,17 @@ function valuationHtml(item) {
   const linksHtml = links.length ? `<div class="retailer-links">${links.filter(link=>link.url).map(link=>`<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">Hledat na ${escapeHtml(link.name)} ↗</a>`).join('')}</div>` : '';
   const actions = `<div class="valuation-actions"><button type="button" class="text-button" data-manual-open="${escapeHtml(item.id)}">${manual ? 'Upravit vlastní cenu' : '+ Zadat vlastní cenu nového'}</button>${manual ? `<button type="button" class="quiet-button" data-manual-remove="${escapeHtml(item.id)}">Odstranit vlastní cenu</button>` : ''}</div>`;
   if (!reference || !calc) return `<div class="valuation"><div class="valuation-top"><div><span class="valuation-kicker">Cenový podklad</span><h4>Cena nového zatím není ověřená</h4></div><span class="valuation-unknown">— Kč</span></div><p class="price-note">${escapeHtml(value?.message ?? (job?.status === 'running' ? 'Cenové porovnání proběhne po dokončení sběru nabídek.' : 'Můžeš doplnit vlastní ověřenou cenu nového kusu.'))}</p>${linksHtml}${comparisonHtml(value)}${actions}${manualFormHtml(item)}</div>`;
-  return `<div class="valuation"><div class="valuation-top"><div><span class="valuation-kicker">Hrubý rozdíl před opravou</span><h4>${manual ? 'Výpočet podle tvého podkladu' : `Nový kus · ${escapeHtml(reference.source)}`}</h4><span class="price-note">${manual ? 'Cena a shoda potvrzená tebou' : matchNotes[reference.match] ?? matchNotes.configuration}</span>${!manual && value.range?.count > 1 && value.range.max > value.range.min ? `<span class="price-note">Rozpětí ${value.range.count} nabídek: ${money(value.range.min)} – ${money(value.range.max)} Kč</span>` : ''}</div><div class="valuation-total"><b class="${calc.grossProfit < 0 ? 'negative' : ''}">${calc.grossProfit == null ? '— Kč' : `${money(calc.grossProfit)} Kč`}</b><br><span class="provenance ${manual || reference.match === 'partial' ? 'manual' : ''}">${manual ? 'Tvoje cena' : reference.match === 'partial' ? 'Orientační cena' : 'Ověřeno v obchodě'}</span></div></div><div class="valuation-math"><div><span>Cena nového</span><strong>${money(reference.priceCzk)} Kč</strong></div><div><span>Odhad prodeje · 75 %</span><strong>${money(calc.resaleEstimate)} Kč</strong></div><div><span>Max. nákup pro rozdíl ${money(calc.targetProfit)} Kč</span><strong>${money(calc.maxPurchasePrice)} Kč</strong></div><span class="calculation">${money(reference.priceCzk)} × 0,75 − ${item.priceCzk == null ? '?' : money(item.priceCzk)} = ${calc.grossProfit == null ? '?' : money(calc.grossProfit)} Kč</span></div><a href="${escapeHtml(reference.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(reference.source)} · ${escapeHtml(reference.title)} ↗</a><p class="price-note">${manual ? 'Zadáno tebou' : 'Nový, dostupný · ověřeno'} ${escapeHtml(new Date(reference.checkedAt ?? reference.enteredAt).toLocaleString('cs-CZ'))}. Bez opravy, dopravy a poplatků.${item.saleType === 'auction' ? ' Počítáno z aktuálního příhozu.' : ''}</p>${linksHtml}${comparisonHtml(value)}${actions}${manualFormHtml(item)}</div>`;
+  const net = item.net, headline = net?.netProfit ?? calc.grossProfit;
+  const costParts = net ? [...net.repairLines.map(l => `${l.label} ${money(l.czk)}`), `doprava ${money(net.shipping)}${net.shippingEstimated ? ' (odhad)' : ''}`, net.fee ? `poplatek ${money(net.fee)}` : '', net.importCzk ? `dovoz ${money(net.importCzk)}` : '', net.sellFee ? `prodej ${money(net.sellFee)}` : ''].filter(Boolean) : [];
+  const costTotal = net ? net.repair + net.shipping + net.fee + net.importCzk + net.sellFee : 0;
+  return `<div class="valuation"><div class="valuation-top"><div><span class="valuation-kicker">${net ? 'Čistý odhad po opravě' : 'Hrubý rozdíl před opravou'}</span><h4>${manual ? 'Výpočet podle tvého podkladu' : `Nový kus · ${escapeHtml(reference.source)}`}</h4><span class="price-note">${manual ? 'Cena a shoda potvrzená tebou' : matchNotes[reference.match] ?? matchNotes.configuration}</span>${!manual && value.range?.count > 1 && value.range.max > value.range.min ? `<span class="price-note">Rozpětí ${value.range.count} nabídek: ${money(value.range.min)} – ${money(value.range.max)} Kč</span>` : ''}</div><div class="valuation-total"><b class="${headline < 0 ? 'negative' : ''}">${headline == null ? '— Kč' : `${money(headline)} Kč`}</b><br><span class="provenance ${manual || reference.match === 'partial' ? 'manual' : ''}">${manual ? 'Tvoje cena' : reference.match === 'partial' ? 'Orientační cena' : 'Ověřeno v obchodě'}</span></div></div><div class="valuation-math"><div><span>Cena nového</span><strong>${money(reference.priceCzk)} Kč</strong></div><div><span>${escapeHtml(calc.resaleLabel ?? 'Odhad prodeje · 75 % nového')}</span><strong>${money(calc.resaleEstimate)} Kč</strong></div><div><span>Náklady (oprava, doprava…)</span><strong>${money(costTotal)} Kč</strong></div><div><span>Hrubý rozdíl</span><strong>${calc.grossProfit == null ? '—' : `${money(calc.grossProfit)} Kč`}</strong></div><div><span>Max. nákup pro čistý zisk ${money(calc.targetProfit)} Kč</span><strong>${money(net?.maxPurchasePrice ?? calc.maxPurchasePrice)} Kč</strong></div><span class="calculation">${money(calc.resaleEstimate)} − ${item.priceCzk == null ? '?' : money(item.priceCzk)} − ${money(costTotal)} = ${headline == null ? '?' : money(headline)} Kč${costParts.length ? `<small>Náklady: ${escapeHtml(costParts.join(' · '))} Kč. Uprav v „Připojení a náklady“.</small>` : ''}</span></div><a href="${escapeHtml(reference.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(reference.source)} · ${escapeHtml(reference.title)} ↗</a><p class="price-note">${manual ? 'Zadáno tebou' : 'Nový, dostupný · ověřeno'} ${escapeHtml(new Date(reference.checkedAt ?? reference.enteredAt).toLocaleString('cs-CZ'))}. Náklady na opravu jsou odhad podle typu závady, ne diagnóza.${item.saleType === 'auction' ? ' Počítáno z aktuálního příhozu.' : ''}</p>${linksHtml}${comparisonHtml(value)}${actions}${manualFormHtml(item)}</div>`;
 }
 function renderItems() {
   const items = visibleItems();
-  const priced = items.filter(item => item.valuation?.calculation?.grossProfit != null);
+  const priced = items.filter(item => bestProfit(item) != null);
   $('#stat-found').innerHTML = `${items.length} <small>nabídek</small>`;
   $('#stat-priced').innerHTML = `${priced.length} <small>oceněných</small>`;
-  $('#stat-profit').textContent = priced.length ? `${money(Math.max(...priced.map(item => item.valuation.calculation.grossProfit)))} Kč` : '—';
+  $('#stat-profit').textContent = priced.length ? `${money(Math.max(...priced.map(bestProfit)))} Kč` : '—';
   moreButton.hidden = items.length <= displayedLimit;
   moreButton.textContent = `Zobrazit dalších ${Math.min(100,Math.max(0,items.length-displayedLimit))} · nyní ${Math.min(items.length,displayedLimit)} z ${items.length}`;
   $('#results-title').innerHTML = `${savedView ? 'Uložené nabídky' : 'Nalezené nabídky'} <span class="count">${items.length}</span>`;
@@ -252,16 +261,26 @@ $('#results').addEventListener('submit', event => {
 });
 $('#nav-search').addEventListener('click', () => { savedView = false; renderItems(); });
 $('#nav-saved').addEventListener('click', () => { savedView = true; renderItems(); });
-$('#settings-button').addEventListener('click', () => $('#settings').showModal());
+function renderCosts(values) {
+  $('#cost-grid').innerHTML = ['repair','risk'].flatMap(group => Object.entries(values[group]).map(([key,czk]) => `<label>${escapeHtml(costLabels[key] ?? key)}<input type="number" min="0" max="1000000" step="50" data-cost-group="${group}" data-cost-key="${key}" value="${czk}"></label>`)).join('');
+  $('#cost-shipping').value = values.shipping; $('#cost-fee').value = values.feePercent; $('#cost-sell-fee').value = values.sellFeePercent;
+}
+function readCosts() {
+  const saved = { repair:{}, risk:{}, shipping:Number($('#cost-shipping').value), feePercent:Number($('#cost-fee').value), sellFeePercent:Number($('#cost-sell-fee').value) };
+  document.querySelectorAll('[data-cost-group]').forEach(input => { if (input.value !== '') saved[input.dataset.costGroup][input.dataset.costKey] = Number(input.value); });
+  return mergeCosts(saved);
+}
+$('#settings-button').addEventListener('click', () => { renderCosts(costs); $('#settings').showModal(); });
+$('#reset-costs').addEventListener('click', () => renderCosts(mergeCosts(null)));
 $('#help-button').addEventListener('click', () => $('#help').showModal());
-$('#settings').addEventListener('close', () => { if ($('#settings').returnValue === 'save') { writeLocal('lovec-rates', { usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value) }); toast('Kurzy se použijí při příštím hledání.'); } });
+$('#settings').addEventListener('close', () => { if ($('#settings').returnValue === 'save') { writeLocal('lovec-rates', { usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value) }); costs = readCosts(); writeLocal('lovec-costs', costs); lastResultsKey = ''; renderItems(); toast('Náklady jsou přepočítané. Kurzy se použijí při příštím hledání.'); } });
 function renderSearches() { $('#saved-searches').innerHTML = '<option value="">Vyber uložené…</option>' + searches.map((s,i) => `<option value="${i}">${escapeHtml(s.prompt)}</option>`).join(''); }
 $('#save-search').addEventListener('click', () => { const data = filters(); if (!data.prompt) return; searches = [data, ...searches.filter(s => JSON.stringify(s) !== JSON.stringify(data))].slice(0,20); writeLocal('lovec-searches', searches); renderSearches(); toast('Hledání uloženo v prohlížeči.'); });
 $('#saved-searches').addEventListener('change', event => { if (event.target.value !== '') restoreFilters(searches[Number(event.target.value)]); });
 $('#delete-search').addEventListener('click', () => { const index = $('#saved-searches').value; if (index === '') return; searches.splice(Number(index),1); writeLocal('lovec-searches', searches); renderSearches(); toast('Uložené hledání smazáno.'); });
 $('#export').addEventListener('click', () => {
   const cell = value => { let s = String(value ?? ''); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return `"${s.replace(/"/g,'""')}"`; };
-  const rows = [['Zdroj','Název','Cena','Měna','Cena CZK orientační','Typ prodeje','Lokalita','Odkaz','Model','CPU','GPU','RAM GB','Disk GB','Cena nového CZK','Odhad prodeje CZK','Hrubý rozdíl CZK','Maximální nákup CZK','Zdroj ceny nového','Shoda ceny nového','Ověřeno nebo zadáno','Původ ceny','Všechny cenové podklady','Upozornění','Konec nabídky'], ...visibleItems().map(x => [names[x.source],x.title,x.price,x.currency,x.priceCzk,x.saleType,x.location,x.url,x.specs?.model,x.specs?.cpu,x.specs?.gpu,x.specs?.ramGb,x.specs?.storageGb,x.valuation?.reference?.priceCzk,x.valuation?.calculation?.resaleEstimate,x.valuation?.calculation?.grossProfit,x.valuation?.calculation?.maxPurchasePrice,x.valuation?.reference?.url,x.valuation?.reference?.match,x.valuation?.reference?.checkedAt ?? x.valuation?.reference?.enteredAt,x.valuation?.status === 'manual' ? 'Ručně zadaná' : 'Automatická',(x.valuation?.offers ?? []).map(o => `${o.source}: ${o.priceCzk} CZK (${o.url})`).join(' | '),x.warnings.join(' '),x.endAt ? new Date(x.endAt).toLocaleString('cs-CZ') : ''])];
+  const rows = [['Zdroj','Název','Cena','Měna','Cena CZK orientační','Typ prodeje','Lokalita','Odkaz','Model','CPU','GPU','RAM GB','Disk GB','Cena nového CZK','Odhad prodeje CZK','Hrubý rozdíl CZK','Maximální nákup CZK','Zdroj ceny nového','Shoda ceny nového','Ověřeno nebo zadáno','Původ ceny','Všechny cenové podklady','Upozornění','Konec nabídky','Závady','Rizika','Náklady na opravu CZK','Čistý odhad CZK','Max. nákup pro čistý zisk CZK'], ...visibleItems().map(x => [names[x.source],x.title,x.price,x.currency,x.priceCzk,x.saleType,x.location,x.url,x.specs?.model,x.specs?.cpu,x.specs?.gpu,x.specs?.ramGb,x.specs?.storageGb,x.valuation?.reference?.priceCzk,x.valuation?.calculation?.resaleEstimate,x.valuation?.calculation?.grossProfit,x.valuation?.calculation?.maxPurchasePrice,x.valuation?.reference?.url,x.valuation?.reference?.match,x.valuation?.reference?.checkedAt ?? x.valuation?.reference?.enteredAt,x.valuation?.status === 'manual' ? 'Ručně zadaná' : 'Automatická',(x.valuation?.offers ?? []).map(o => `${o.source}: ${o.priceCzk} CZK (${o.url})`).join(' | '),x.warnings.join(' '),x.endAt ? new Date(x.endAt).toLocaleString('cs-CZ') : '',(x.defects ?? []).map(d => d.label).join(', '),(x.risks ?? []).map(r => r.label).join(', '),x.net?.repair,x.net?.netProfit,x.net?.maxPurchasePrice])];
   const blob = new Blob(['\uFEFF' + rows.map(row => row.map(cell).join(';')).join('\r\n')], { type:'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = 'lovec-nabidek.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 });

@@ -237,7 +237,7 @@ h1 span{color:var(--muted);font-weight:500}
 .valuation p{margin:8px 0}
 .valuation a{color:var(--ink);font-weight:500}
 .valuation a:hover{color:var(--accent)}
-.valuation-math{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:16px 0 12px}
+.valuation-math{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:16px 0 12px}
 .valuation-math>div{background:var(--surface);padding:12px 16px}
 .valuation-math span{font-size:12px;color:var(--muted);display:block}
 .valuation-math strong{font-family:var(--mono);font-size:18px;font-weight:600;letter-spacing:-.02em}
@@ -301,6 +301,10 @@ dialog p,dialog li{font-size:14px;line-height:1.65;color:var(--ink-2)}
 dialog h3{font-size:16px;font-weight:600;margin:24px 0 0}
 dialog code{font-family:var(--mono);background:var(--surface-2);border:1px solid var(--line);padding:1px 6px;border-radius:6px;font-size:12.5px}
 #connection-status{font-size:14px;line-height:1.9;background:var(--surface-2);border-radius:12px;padding:12px 16px;margin-bottom:6px}
+.cost-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px;margin:14px 0 6px}
+.cost-grid label{font-size:12px}
+#reset-costs{margin:0 16px 0 0}
+.valuation-math .calculation small{display:block;font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:4px}
 .rate-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 22px}
 .help-list{padding-left:22px}
 .help-list li{margin-bottom:12px;padding-left:4px}
@@ -407,5 +411,6 @@ dialog code{font-family:var(--mono);background:var(--surface-2);border:1px solid
   dialog{padding:22px 20px}
   .dialog-title h2{font-size:25px}
   .rate-grid{gap:8px}
+  .cost-grid{grid-template-columns:1fr 1fr}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.ticket{transform:none}}

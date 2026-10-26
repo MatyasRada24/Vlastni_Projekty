@@ -32,6 +32,19 @@ test('K24 accepts explicit new product data but rejects used, expired or unrelat
   assert.deepEqual(parseRetailLinks(searchHtml('k24'),newPriceSearchUrl({sku:'82XV00ABCK'},'k24')),[urls.k24]);
 });
 
+test('Net estimate subtracts repair per defect, shipping, fees and import costs', async ()=>{
+  const { calculateNet, mergeCosts } = await import('../public/pricing.js');
+  const costs = mergeCosts({ repair:{ display:2000, power:1000 }, risk:{ charger:300 }, shipping:150, feePercent:5 });
+  const item = { priceCzk:4000, shippingCzk:null, defects:[{id:'display'},{id:'power'}], risks:[{id:'charger',level:'warn'}] };
+  const net = calculateNet(15000, item, costs, 2000, 500);
+  assert.equal(net.repair, 3300); assert.equal(net.shipping, 150); assert.equal(net.shippingEstimated, true); assert.equal(net.fee, 200);
+  assert.equal(net.netProfit, 15000 - 4000 - 200 - 150 - 3300 - 500);
+  assert.equal(net.maxPurchasePrice, Math.round((15000 - 150 - 3300 - 500 - 2000) / 1.05 * 100) / 100);
+  assert.equal(calculateNet(15000, {...item, priceCzk:null}, costs).netProfit, null);
+  assert.equal(calculateNet(null, item, costs), null);
+  assert.equal(mergeCosts({ repair:{ display:-5 } }).repair.display, 1800);
+});
+
 test('Missing hardware does not trigger network requests but exposes both manual search links',async()=>{
   const value=await lookupNewPrice({model:'LOQ 15IRH8'},new AbortController().signal,{getPage:async()=>{throw new Error('must not fetch');}});
   assert.equal(value.status,'insufficient');assert.equal(value.searchLinks.length,2);
