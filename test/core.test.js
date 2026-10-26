@@ -56,6 +56,16 @@ test('Excluded phrases, required terms and location obey explicit filters', asyn
   const f = filters({ excludeTerms:['politý'],includeTerms:['RTX'],location:'Brno' }); const p = await createPlan(f,{env:{}});
   assert.ok(evaluate(listing(),p,f)); assert.equal(evaluate(listing({description:'Politý, nejde zapnout'}),p,f),null); assert.equal(evaluate(listing({location:'Praha'}),p,f),null);
 });
+test('Region filter uses the postcode district, with city names as fallback', async () => {
+  const { regionOf } = await import('../src/regions.js');
+  assert.equal(regionOf('Brno 602 00'), 'jihomoravsky');
+  assert.equal(regionOf('Zličín 15521'), 'praha');
+  assert.equal(regionOf('Třebíč 674 01'), 'vysocina');
+  assert.equal(regionOf('Uherské Hradiště 686 01'), 'zlinsky');
+  assert.equal(regionOf('Ostrava'), 'moravskoslezsky');
+  assert.equal(regionOf('Austin, US'), null);
+});
+
 test('Auction and unknown sale types cannot pass fixed-only filter', () => {
   for (const saleType of ['auction','unknown']) assert.equal(evaluate(listing({saleType}),rulePlan('notebook'),filters({includeAuctions:false})),null);
 });

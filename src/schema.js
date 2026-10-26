@@ -29,6 +29,7 @@ export const searchSchema = z.object({
   includeTerms: words.default([]),
   excludeTerms: words.default([]),
   location: z.string().trim().max(100).default(''),
+  region: z.enum(['', 'praha','stredocesky','jihocesky','plzensky','karlovarsky','ustecky','liberecky','kralovehradecky','pardubicky','vysocina','jihomoravsky','olomoucky','zlinsky','moravskoslezsky']).default(''),
   model: z.string().trim().max(80).default(''),
   cpu: z.string().trim().max(80).default(''),
   gpu: z.string().trim().max(80).default(''),

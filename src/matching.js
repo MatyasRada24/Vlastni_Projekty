@@ -2,6 +2,7 @@ import { normalize } from './schema.js';
 import { hasTerm, groupMatches, productGroups } from './vocabulary.js';
 import { extractHardware, hardwareMatches } from './hardware.js';
 import { classifyListing } from './defects.js';
+import { regionOf } from './regions.js';
 
 const defectTerms = ['nefunkcni','nefunkcnost','nezapina','nejde zapnout','nenabiha','nejde obraz','bez obrazu','rozbity','rozbita','rozbite','poskozeny','poskozena','poskozene','vadny','vadna','vadne','na opravu','na dily','nefunkc','broken','faulty','not working','for parts','spares or repair','does not power','cracked screen','praskly displej','praskla obrazovka','netestovan','untested'];
 
@@ -55,6 +56,7 @@ export function detailCandidate(item, plan, filters) {
 function passesFilters(item, filters) {
   if (!filters.includeAuctions && (item.saleType === 'auction' || item.saleType === 'unknown')) return false;
   if (filters.location && !normalize(item.location).includes(normalize(filters.location))) return false;
+  if (filters.region && regionOf(item.location) !== filters.region) return false;
   const rates = { CZK: 1, USD: filters.usdRate, EUR: filters.eurRate, GBP: filters.gbpRate };
   const value = item.price !== null && rates[item.currency] ? Math.round(item.price * rates[item.currency]) : null;
   if (value === null && !filters.includeUnknownPrice) return false;
@@ -70,6 +72,7 @@ export function evaluate(item, plan, filters) {
   if (plan.damaged && !evidence.length) return null;
   if (!filters.includeAuctions && (item.saleType === 'auction' || item.saleType === 'unknown')) return null;
   if (filters.location && !normalize(item.location).includes(normalize(filters.location))) return null;
+  if (filters.region && regionOf(item.location) !== filters.region) return null;
   const rates = { CZK: 1, USD: filters.usdRate, EUR: filters.eurRate, GBP: filters.gbpRate };
   const rate = rates[item.currency];
   const priceCzk = item.price !== null && rate ? Math.round(item.price * rate) : null;
