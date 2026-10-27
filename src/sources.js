@@ -139,7 +139,9 @@ export async function collectSource(source, plan, filters, progress, signal, dep
     report.message = `Prohlédnuto ${report.scanned} nabídek na ${report.pages} stránkách.`;
   } catch (error) {
     report.status = signal.aborted ? 'cancelled' : items.size ? 'partial' : (error.code || 'error');
-    report.message = signal.aborted ? 'Vyhledávání zastaveno.' : error instanceof SourceError ? error.message : 'Zdroj není dostupný nebo vypršel čas připojení. Zkus hledání později.';
+    report.message = signal.aborted ? 'Vyhledávání zastaveno.' : error instanceof SourceError ? error.message
+      : error?.name === 'TimeoutError' ? 'Zdroj neodpověděl do 18 s. Zkus hledání později.'
+      : `Zdroj není dostupný (${String(error?.cause?.code ?? error?.message ?? 'neznámá chyba').slice(0, 80)}). Zkus hledání později.`;
   }
   report.warnings = [...new Set(report.warnings)];
   emit();
