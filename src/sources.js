@@ -32,9 +32,15 @@ async function ebayToken(env, signal, fetchFn) {
     headers: { Authorization: `Basic ${Buffer.from(`${env.EBAY_CLIENT_ID}:${env.EBAY_CLIENT_SECRET}`).toString('base64')}`, 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ grant_type: 'client_credentials', scope: 'https://api.ebay.com/oauth/api_scope' }).toString(),
   });
-  if (!response.ok) throw new SourceError(response.status === 401
-    ? 'eBay odmítl klíče (HTTP 401). Produkční keyset bývá neaktivní, dokud v developer portálu nenastavíš „Marketplace account deletion“ (výjimka „I do not persist eBay data“). Ověř také, že Cert ID patří ke stejnému keysetu.'
-    : `eBay nepřijal přihlašovací údaje (HTTP ${response.status}). Zkontroluj produkční klíče.`, 'error');
+  if (!response.ok) {
+    const code = await response.json().then(body => body?.error, () => null);
+    // eBay distinguishes a disabled/wrong keyset from a keyset that is valid but lacks OAuth.
+    throw new SourceError(code === 'unauthorized_client'
+      ? 'eBay klíče přijal, ale keyset nemá povolený OAuth (HTTP 401 unauthorized_client). V developer portálu u keysetu klikni na „Enable OAuth“; změna se může projevit až po několika minutách.'
+      : response.status === 401
+        ? 'eBay odmítl klíče (HTTP 401). Produkční keyset bývá neaktivní, dokud v developer portálu nenastavíš „Marketplace account deletion“ (výjimka „I do not persist eBay data“). Ověř také, že Cert ID patří ke stejnému keysetu.'
+        : `eBay nepřijal přihlašovací údaje (HTTP ${response.status}). Zkontroluj produkční klíče.`, 'error');
+  }
   const data = await response.json();
   if (!data.access_token) throw new SourceError('eBay nevrátil přístupový token.');
   tokenCache = { token: data.access_token, expires: Date.now() + Math.max(0, Number(data.expires_in) - 120) * 1000 };
