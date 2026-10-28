@@ -27,7 +27,13 @@ export function newPriceSearchUrl(specs, source = 'mironet') {
 export function rankLinks(links, specs) {
   const slug = url => decodeURIComponent(new URL(url).pathname).toLowerCase().replace(/[^a-z0-9]/g, '');
   const tokens = [specs.model, specs.cpu, specs.gpu, specs.sku].filter(Boolean).flatMap(v => String(v).toLowerCase().split(/[\s-]+/)).map(t => t.replace(/[^a-z0-9]/g, '')).filter(t => t.length > 1 && !['core','ultra','ryzen','rtx','gtx','gen'].includes(t));
-  const scored = links.map((url, i) => ({url, i, score: tokens.filter(t => slug(url).includes(t)).length}));
+  // Product URLs spell out the configuration ("…_Ryzen_5_150_16GB_512GB_RTX5050"); a known CPU, GPU, RAM
+  // or disk that differs from the wanted laptop cannot match, so its page is not worth a request.
+  const conflicts = url => {
+    const found = extractHardware({ title: decodeURIComponent(new URL(url).pathname.split('/').pop()).replace(/\.html?$/, '').replace(/_/g, ' ') });
+    return ['cpu','gpu','ramGb','storageGb'].some(key => specs[key] != null && found[key] != null && normalize(String(specs[key])).replace(/[^a-z0-9]/g,'') !== normalize(String(found[key])).replace(/[^a-z0-9]/g,''));
+  };
+  const scored = links.filter(url => !conflicts(url)).map((url, i) => ({url, i, score: tokens.filter(t => slug(url).includes(t)).length}));
   const relevant = scored.filter(x => x.score > 0);
   return (relevant.length ? relevant : scored).sort((a,b) => b.score - a.score || a.i - b.i).map(x => x.url);
 }

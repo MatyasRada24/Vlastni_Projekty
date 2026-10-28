@@ -15,7 +15,9 @@ for (const family of ['geist','geist-mono','bricolage-grotesque']) for (const su
   const file = `fonts/${family}-${subset}-wght-normal.woff2`;
   staticFiles[`/${file}`] = [file,'font/woff2'];
 }
-const publicJob = ({ controller, ...job }) => job;
+// Matching runs on the server with the full text; the card shows two lines, so polls carry only the start
+// of each description instead of up to 14 000 characters per listing.
+const publicJob = ({ controller, ...job }) => ({ ...job, items: (job.items ?? []).map(item => item.description?.length > 600 ? { ...item, description: `${item.description.slice(0, 600)}…` } : item) });
 const watcher = createWatcher({ store, runAgent, jobs });
 
 async function readBody(req) {

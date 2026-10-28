@@ -172,8 +172,7 @@ function renderItems() {
   const key = JSON.stringify([shown, favorites.map(x=>x.id),[...editingPrices],[...priceErrors]]);
   if (key === lastResultsKey) return;
   lastResultsKey = key;
-  const expanded = new Set([...$('#results').querySelectorAll('article details[open]')].map(detail=>`${detail.closest('article').dataset.id}:${detail.className}`));
-  $('#results').innerHTML = shown.map(item => {
+  patchResults(shown.map(item => {
     const saved = favorites.some(x => x.id === item.id);
     const saleType = { auction:'Aukce · aktuální příhoz', fixed:'Kup teď', classified:'Inzerát', unknown:'Typ prodeje neověřen' }[item.saleType];
     return `<article class="listing" data-id="${escapeHtml(item.id)}">
@@ -182,8 +181,33 @@ function renderItems() {
       <div class="listing-price"><span class="price">${item.priceCzk === null ? 'Cena neznámá' : `${item.currency !== 'CZK' ? '≈ ' : ''}${money(item.priceCzk)} Kč`}</span>${item.currency !== 'CZK' && item.price !== null ? `<span class="original-price">${money(item.price)} ${escapeHtml(item.currency)}</span>` : ''}<span class="price-note">${escapeHtml(saleType)}</span>${endHtml(item.endAt)}<span class="price-note">${item.shippingCzk === null ? 'Doprava nezjištěna' : `Doprava od ${money(item.shippingCzk)} Kč`}</span><a class="primary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Otevřít nabídku <span>↗</span></a><div class="card-actions"><button class="bookmark ${saved ? 'saved' : ''}" data-save="${escapeHtml(item.id)}">${saved ? '★ Uloženo' : '☆ Uložit'}</button><button class="bookmark" data-hide="${escapeHtml(item.id)}">${hiddenListings[item.id] ? 'Zrušit skrytí' : 'Skrýt'}</button></div></div>
       ${valuationHtml(item)}
     </article>`;
-  }).join('');
-  $('#results').querySelectorAll('article details').forEach(detail => { if (expanded.has(`${detail.closest('article').dataset.id}:${detail.className}`)) detail.open = true; });
+  }), shown.map(item => item.id));
+}
+
+// Only cards whose markup changed are rebuilt; unchanged cards keep their DOM, loaded photos and open sections.
+const renderedCards = new Map();
+function patchResults(htmls, ids) {
+  const container = $('#results');
+  [...container.children].forEach(el => { if (el.tagName !== 'ARTICLE') el.remove(); });
+  const existing = new Map([...container.children].map(el => [el.dataset.id, el]));
+  ids.forEach((id, index) => {
+    let el = existing.get(id);
+    if (!el || renderedCards.get(id) !== htmls[index]) {
+      const template = document.createElement('template');
+      template.innerHTML = htmls[index].trim();
+      const fresh = template.content.firstElementChild;
+      if (el) {
+        const open = new Set([...el.querySelectorAll('details[open]')].map(d => d.className));
+        fresh.querySelectorAll('details').forEach(d => { if (open.has(d.className)) d.open = true; });
+        el.replaceWith(fresh);
+      }
+      el = fresh;
+      renderedCards.set(id, htmls[index]);
+    }
+    if (container.children[index] !== el) container.insertBefore(el, container.children[index] ?? null);
+    existing.delete(id);
+  });
+  existing.forEach((el, id) => { el.remove(); renderedCards.delete(id); });
 }
 function renderJob() {
   if (!job) return;
