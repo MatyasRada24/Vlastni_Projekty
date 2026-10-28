@@ -2,21 +2,33 @@ import { categories } from './schema.js';
 import { getPage, SourceError } from './http.js';
 import { parseBazos, parseAukro, parseEbay, extractDescription } from './parsers.js';
 import { detailCandidate, productMatches, damageEvidence } from './matching.js';
-import { groupMatches } from './vocabulary.js';
+import { groupMatches, hasTerm } from './vocabulary.js';
 
 export const sourceNames = { bazos: 'Bazoš', aukro: 'Aukro', ebay: 'eBay' };
 
+// Bazoš forbids its search (robots.txt: hledat=) but splits phones by brand, which narrows the browse.
+export function bazosBase(plan) {
+  const category = categories[plan.category];
+  const text = (plan.keywords ?? []).join(' ');
+  const brand = Object.entries(category.bazosBrands ?? {}).find(([, names]) => names.some(name => hasTerm(text, name)));
+  return brand ? `${category.bazos}${brand[0]}/` : category.bazos;
+}
+
+// Within a category the generic word ("telefon", "laptop") only hides listings that omit it.
+export const keywordQuery = (plan, fallback) => plan.category !== 'all' && plan.keywords?.length ? plan.keywords.join(' ').slice(0, 160) : fallback;
+
 export function searchUrl(source, plan, page = 1) {
   const category = categories[plan.category];
-  if (source === 'bazos') return `${category.bazos}${page > 1 ? `${(page - 1) * 20}/` : ''}`;
+  if (source === 'bazos') return `${bazosBase(plan)}${page > 1 ? `${(page - 1) * 20}/` : ''}`;
   if (source === 'aukro') {
     const url = new URL(category.aukro || 'https://aukro.cz/vysledky-vyhledavani');
     if (!category.aukro) url.searchParams.set('text', plan.queryCs);
+    else if (plan.keywords?.length) url.searchParams.set('text', keywordQuery(plan));
     if (page > 1) url.searchParams.set('page', String(page));
     return url.href;
   }
   const url = new URL('https://www.ebay.com/sch/i.html');
-  url.searchParams.set('_nkw', plan.queryEn);
+  url.searchParams.set('_nkw', keywordQuery(plan, plan.queryEn));
   if (category.ebay) url.searchParams.set('_sacat', category.ebay);
   if (plan.damaged) url.searchParams.set('LH_ItemCondition', '7000');
   return url.href;
@@ -70,7 +82,7 @@ export async function collectSource(source, plan, filters, progress, signal, dep
         if (!stream) break;
         const url = new URL('https://api.ebay.com/buy/browse/v1/item_summary/search');
         url.searchParams.set('fieldgroups', 'EXTENDED');
-        if (!stream.broad) url.searchParams.set('q', plan.queryEn);
+        if (!stream.broad) url.searchParams.set('q', keywordQuery(plan, plan.queryEn));
         url.searchParams.set('limit', '50'); url.searchParams.set('offset', String(stream.offset));
         if (categories[plan.category].ebay) url.searchParams.set('category_ids', categories[plan.category].ebay);
         const queryFilters = [filters.includeAuctions ? 'buyingOptions:{FIXED_PRICE|AUCTION}' : 'buyingOptions:{FIXED_PRICE}'];

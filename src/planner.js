@@ -24,7 +24,16 @@ export function rulePlan(prompt, forcedCategory = null) {
   for (const word of remaining.slice(0, 8)) termGroups.push([word]);
   const cs = { laptops: 'notebook', graphics: 'grafická karta', consoles: 'herní konzole', phones: 'telefon', all: prompt }[category];
   const en = { laptops: 'laptop', graphics: 'graphics card', consoles: 'game console', phones: 'phone', all: prompt }[category];
-  return { category, queryCs: [cs, ...remaining].join(' ').slice(0,160), queryEn: [wantsGaming && category === 'laptops' ? 'gaming' : '', en, ...remaining].filter(Boolean).join(' ').slice(0,160), termGroups, excludeTerms: [], damaged, explanation: 'Lokální pravidla: synonyma produktu, herní výbava a zmínky o poškození. Cenu, lokalitu a další přesné požadavky nastav ve filtrech.' };
+  return { category, keywords: remaining.slice(0, 8), queryCs: [cs, ...remaining].join(' ').slice(0,160), queryEn: [wantsGaming && category === 'laptops' ? 'gaming' : '', en, ...remaining].filter(Boolean).join(' ').slice(0,160), termGroups, excludeTerms: [], damaged, explanation:'Lokální pravidla: synonyma produktu, herní výbava a zmínky o poškození. Cenu, lokalitu a další přesné požadavky nastav ve filtrech.' };
+}
+
+// The single category whose product names appear in the terms. Gaming words such as RTX or Legion
+// are left out: "RTX" in a notebook search must not switch it to graphics cards.
+export function categoryOfTerms(terms) {
+  const text = terms.join(' ');
+  const skip = new Set(gaming.map(normalize));
+  const found = Object.entries(productGroups).filter(([, group]) => group.some(term => !skip.has(normalize(term)) && hasTerm(text, term))).map(([id]) => id);
+  return found.length === 1 ? found[0] : null;
 }
 
 const schema = {
@@ -64,11 +73,22 @@ export async function createPlan(filters, { env = process.env, fetchFn = fetch, 
   } else if (filters.useAI) warning = 'OPENAI_API_KEY není nastavený. Vyhledávání používá lokální pravidla.';
   // A category chosen by hand rebuilds the search terms; otherwise "Rozbitý herní notebook" would keep
   // requiring notebook words inside the phone or console category.
-  if (filters.category !== 'auto' && filters.category !== 'all' && plan.category !== filters.category) {
-    const forced = rulePlan(filters.prompt, filters.category);
-    plan = { ...forced, damaged: plan.damaged, explanation: `Zvolená kategorie „${categories[filters.category].label}“ má přednost před zadáním. ${forced.explanation}` };
+  // "Musí obsahovat: Google Pixel 10a" names a phone even when the prompt still says notebook.
+  const includeCategory = filters.category === 'auto' ? categoryOfTerms(filters.includeTerms) : null;
+  const chosen = filters.category !== 'auto' ? filters.category : includeCategory;
+  if (chosen && chosen !== 'all' && plan.category !== chosen) {
+    const forced = rulePlan(filters.prompt, chosen);
+    const reason = filters.category !== 'auto' ? `Zvolená kategorie „${categories[chosen].label}“ má přednost před zadáním.` : `Povinné výrazy určují kategorii „${categories[chosen].label}“.`;
+    plan = { ...forced, damaged: plan.damaged, explanation: `${reason} ${forced.explanation}` };
     mode = 'rules';
   } else if (filters.category !== 'auto') plan.category = filters.category;
+  // Keywords are what the marketplaces search for: model words from the prompt plus required terms.
+  // Without them Bazoš and Aukro only browse the newest listings of the whole category.
+  const own = Array.isArray(plan.keywords) ? plan.keywords : rulePlan(filters.prompt, plan.category).keywords;
+  const keywords = [...new Set([...own, ...filters.includeTerms].map(x => x.trim()).filter(Boolean))];
+  plan.keywords = keywords.filter(word => !keywords.some(other => other !== word && normalize(other).split(/\s+/).includes(normalize(word))));
+  const append = (query, term) => normalize(query).includes(normalize(term)) ? query : `${query} ${term}`.slice(0, 160);
+  for (const term of filters.includeTerms) { plan.queryCs = append(plan.queryCs, term); plan.queryEn = append(plan.queryEn, term); }
   if (filters.condition !== 'auto') plan.damaged = filters.condition === 'damaged';
   plan.excludeTerms = [...new Set([...plan.excludeTerms, ...filters.excludeTerms])];
   return { ...plan, mode, warning };

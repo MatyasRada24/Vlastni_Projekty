@@ -73,6 +73,23 @@ test('A hand-picked category rebuilds the search terms and keeps only that kind 
   const c = await createPlan(searchSchema.parse({ prompt:'konzole', sources:['bazos'], category:'consoles', condition:'any' }), { env:{} });
   assert.equal(evaluate({ ...phone('Ovladač PS5 DualSense bílý'), category:'consoles' }, c, f), null);
 });
+test('Required terms naming a model pick the category and are searched for, not just filtered', async () => {
+  const f = searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos','aukro','ebay'], includeTerms:['Google pixel 10a'], condition:'any', maxPrice:null });
+  const plan = await createPlan(f, { env:{} });
+  assert.equal(plan.category, 'phones'); assert.deepEqual(plan.keywords, ['Google pixel 10a']);
+  assert.equal(searchUrl('bazos', plan, 2), 'https://mobil.bazos.cz/google/20/');
+  assert.equal(searchUrl('aukro', plan), 'https://aukro.cz/mobilni-telefony?text=Google+pixel+10a');
+  assert.ok(searchUrl('ebay', plan).includes('_nkw=Google+pixel+10a'));
+  const phone = title => ({ id:'aukro:1', source:'aukro', category:'phones', title, description:'', price:9000, currency:'CZK', shipping:null, location:'Praha', condition:'', saleType:'classified' });
+  assert.ok(evaluate(phone('Google Pixel 10a 128 GB Lavender nový'), plan, f));
+  assert.equal(evaluate(phone('Průhledné pouzdro 3mk Clear pro Google Pixel 10A'), plan, f), null);
+  assert.equal(evaluate(phone('Tech-Protect FlexAir Hybrid MagSafe pouzdro na Google Pixel 10A'), plan, f), null);
+  assert.deepEqual(damageEvidence({ title:'Google Pixel 10a', description:'Prodám nepoškozený/jako nový Pixel 10a', condition:'' }), []);
+  // Gaming words stay inside the notebook search; brand-less browsing is unchanged.
+  const rtx = await createPlan(searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos'], includeTerms:['RTX'] }), { env:{} });
+  assert.equal(rtx.category, 'laptops');
+  assert.equal(searchUrl('bazos', await createPlan(searchSchema.parse({ prompt:'telefon', sources:['bazos'], category:'phones' }), { env:{} })), 'https://mobil.bazos.cz/');
+});
 
 test('Region filter uses the postcode district, with city names as fallback', async () => {
   const { regionOf } = await import('../src/regions.js');

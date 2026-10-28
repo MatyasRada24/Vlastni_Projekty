@@ -4,7 +4,7 @@ export const categories = {
   laptops: { label: 'Notebooky', bazos: 'https://pc.bazos.cz/notebook/', aukro: 'https://aukro.cz/notebooky-netbooky', ebay: '175672' },
   graphics: { label: 'Grafické karty', bazos: 'https://pc.bazos.cz/graficka/', aukro: 'https://aukro.cz/pc-graficke-karty', query: 'grafická karta', ebay: '27386' },
   consoles: { label: 'Herní konzole', bazos: 'https://pc.bazos.cz/playstation/', aukro: 'https://aukro.cz/herni-konzole', query: 'herní konzole', ebay: '139971' },
-  phones: { label: 'Mobilní telefony', bazos: 'https://mobil.bazos.cz/', aukro: 'https://aukro.cz/mobilni-telefony', query: 'mobilní telefon', ebay: '9355' },
+  phones: { label: 'Mobilní telefony', bazos: 'https://mobil.bazos.cz/', bazosBrands: { apple:['apple','iphone'], google:['google','pixel'], huawei:['huawei','honor'], motorola:['motorola','moto g'], nokia:['nokia'], realme:['realme'], samsung:['samsung','galaxy'], ericsson:['sony','xperia'], xiaomi:['xiaomi','redmi','poco'], mobily:['oneplus','oppo','vivo','nothing phone','fairphone'] }, aukro: 'https://aukro.cz/mobilni-telefony', query: 'mobilní telefon', ebay: '9355' },
   all: { label: 'Všechny kategorie', bazos: 'https://www.bazos.cz/' },
 };
 
@@ -17,6 +17,7 @@ export const planSchema = z.object({
   excludeTerms: words,
   damaged: z.boolean(),
   explanation: z.string().max(800),
+  keywords: z.array(z.string().trim().min(1).max(80)).max(12).optional(),
 }).strict();
 
 export const searchSchema = z.object({

@@ -9,7 +9,7 @@ const defectTerms = ['nefunkcni','nefunkcnost','nezapina','nejde zapnout','nenab
 const textEvidence = memo(raw => {
   const text = normalize(raw);
   // Negated phrases must not turn healthy listings into damaged ones.
-  const withoutNegations = text.replace(/(?:neni|nejsou|nebyl|not|never)\s+(?:nijak\s+)?(?:poskozen\w*|rozbit\w*|vadn\w*|nefunkcn\w*|broken|faulty|damaged|defective)/g, '').replace(/bez\s+(?:vad\w*|poskozeni|zavad\w*|poruch\w*)/g, '');
+  const withoutNegations = text.replace(/(?:neni|nejsou|nebyl|not|never)\s+(?:nijak\s+)?(?:poskozen\w*|rozbit\w*|vadn\w*|nefunkcn\w*|broken|faulty|damaged|defective)/g, '').replace(/bez\s+(?:vad\w*|poskozeni|zavad\w*|poruch\w*)/g, '').replace(/\bne(?:poskozen|rozbit|vadn|poskraban)\w*/g, '');
   const hits = defectTerms.filter(term => withoutNegations.includes(term));
   const patterns = [
     [/\b(?:nefunguje|nefunkcnost|nebezi|nezapne|nezapina|nenabehne|nenabiji|nenabijí)\b/, 'nefunguje / nespouští se'],
@@ -38,8 +38,15 @@ const accessories = {
 };
 function isAccessory(item, plan) {
   const pattern = accessories[plan.category];
-  return Boolean(pattern) && new RegExp(accessoryStart + pattern.source).test(normalize(item.title));
+  if (!pattern) return false;
+  const title = normalize(item.title);
+  if (new RegExp(accessoryStart + pattern.source).test(title)) return true;
+  // "Průhledné pouzdro 3mk pro Google Pixel 10A": the accessory word precedes every product name and is "for" something.
+  // "Prasklý displej Samsung Galaxy" (no "pro") or "Lenovo Legion, nová baterie, pro hráče" stay devices.
+  const match = new RegExp(pattern.source + String.raw`\w*\b.*?\b(?:pro|for|kompatibiln\w*|na(?! dily| opravu))\b`).exec(title);
+  return Boolean(match) && ![...(productGroups[plan.category] ?? []), ...brands].some(term => hasTerm(title.slice(0, match.index), term));
 }
+const brands = ['hp','dell','lenovo','asus','acer','msi','apple','toshiba','fujitsu','samsung','huawei','xiaomi','razer','xps','sony','google','microsoft','nvidia','amd','gigabyte','zotac','palit','sapphire','evga','pny','inno3d','gainward','asrock','powercolor'];
 
 // "Koupím iPhone na díly" is a buyer's request, not an offer.
 const wantedAd = /^(?:koupim|vykoupim|vykup|shanim|hledam|poptavam|poptavka|wanted|buying)\b/;
