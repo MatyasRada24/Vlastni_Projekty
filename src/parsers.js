@@ -54,6 +54,8 @@ export function parseAukro(html, pageUrl, now = Date.now()) {
       item.location = clean(`${row.location ?? ''} ${row.postcode ?? ''}`);
       item.saleType = row.auction === true ? 'auction' : row.auction === false ? 'fixed' : 'unknown';
       item.endAt = row.endingTime || null;
+      // Aukro fills an empty category search with offers from elsewhere; the path tells them apart.
+      if (Array.isArray(row.categoryPath)) item.aukroCategories = row.categoryPath.map(c => c?.seoUrl).filter(Boolean);
       const withShipping = parsePrice(row.priceWithShipping?.amount);
       if (item.price !== null && withShipping !== null && row.priceWithShipping?.currency === item.currency) item.shipping = Math.max(0, withShipping - item.price);
       items.push(item);

@@ -159,6 +159,18 @@ test('Aukro reads main results only, current bid, location and shipping', () => 
   const html = `<script id="ng-state" type="application/json">${JSON.stringify(state)}</script>`;
   const result = parseAukro(html,'https://aukro.cz/notebooky-netbooky'); assert.equal(result.items.length,1); assert.equal(result.items[0].saleType,'auction'); assert.equal(result.items[0].shipping,69); assert.equal(result.items[0].condition,'Poškozené');
 });
+test('Aukro fallback offers from other categories are dropped', async () => {
+  const row = (itemId, itemName, path) => ({ itemId, itemName, seoUrl:`x${itemId}`, price:{amount:300,currency:'CZK'}, auction:false, itemState:'ACTIVE', categoryPath:path.map(seoUrl => ({ seoUrl })) });
+  const state = { aukCache:{ 'POST /offers/searchItemsCommon':{ b:{ content:[
+    row(1, 'Pouzdro pro Google Pixel 10A', ['mobily-a-gps','obaly-pouzdra-kapsy-pro-mobily-a-gps']),
+    row(2, 'MSI RTX 3060 Ventus', ['pocitace-a-hry','pc-komponenty','pc-graficke-karty']),
+  ] } } } };
+  const html = `<script id="ng-state" type="application/json">${JSON.stringify(state)}</script>`;
+  const f = searchSchema.parse({ prompt:'', sources:['aukro'], category:'gpu', pages:1, detailLimit:0, maxPrice:null });
+  const plan = await createPlan(f, { env:{} });
+  const result = await collectSource('aukro', plan, f, () => {}, new AbortController().signal, { getPage: async url => ({ html, url }) });
+  assert.deepEqual(result.items.map(x => x.title), ['MSI RTX 3060 Ventus']);
+});
 test('Aukro JSON-LD fallback keeps sale type unknown', () => {
   const html = `<script type="application/ld+json">${JSON.stringify({mainEntity:{itemListElement:[{'@type':'Product',name:'Notebook',url:'https://aukro.cz/notebook-123',offers:{price:100,priceCurrency:'CZK'}}]}})}</script>`;
   assert.equal(parseAukro(html,'https://aukro.cz').items[0].saleType,'unknown');

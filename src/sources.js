@@ -116,6 +116,10 @@ export async function collectSource(source, plan, filters, progress, signal, dep
       const signature = `${stream?.broad ?? false}:` + parsed.items.map(x => x.id).sort().join('|');
       const repeated = parsed.items.length > 0 && seenPages.has(signature);
       seenPages.add(signature);
+      // An Aukro offer whose category path leaves the searched category is a fallback suggestion
+      // ("Google Pixel 10a" typed into graphics cards brings phone cases), not a result.
+      const aukroSlug = source === 'aukro' && categories[plan.category].aukro ? new URL(categories[plan.category].aukro).pathname.slice(1) : null;
+      if (aukroSlug) parsed.items = parsed.items.filter(item => !item.aukroCategories || item.aukroCategories.includes(aukroSlug));
       for (const item of parsed.items) {
         // Only infer category from a real category page/API category, never an unrestricted keyword result.
         if (source === 'bazos' || source === 'ebay' || categories[plan.category].aukro) item.category = plan.category;
