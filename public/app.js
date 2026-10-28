@@ -41,7 +41,7 @@ async function api(url, options = {}) {
 const terms = id => $(id).value.split(',').map(x => x.trim()).filter(Boolean);
 const price = id => $(id).value.trim() === '' ? null : Number($(id).value);
 function filters() {
-  return { prompt: $('#prompt').value.trim(), sources: [...document.querySelectorAll('[name=source]:checked')].map(x => x.value), category: searchCategory(), condition: $('#condition').value, minPrice: price('#min-price'), maxPrice: price('#max-price'), includeTerms: terms('#include'), excludeTerms: terms('#exclude'), location: $('#location').value.trim(), region: $('#region').value, pages: Number($('#pages').value), detailLimit: Number($('#detail-limit').value), includeAuctions: $('#auctions').checked, includeUnknownPrice: $('#unknown-price').checked, useAI: $('#use-ai').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value), brand:$('#brand').value, cpu:$('#cpu').value.trim(), gpu:$('#gpu').value.trim(), minRamGb:price('#min-ram'), minStorageGb:price('#min-storage'), minVramGb:price('#min-vram'), includeUnknownSpecs:$('#unknown-specs').checked, lookupNewPrices:$('#lookup-prices').checked, priceLookupLimit:Number($('#price-lookup-limit').value), targetProfit:Number($('#target-profit').value), priceSources:[...document.querySelectorAll('[name=price-source]:checked')].map(x => x.value) };
+  return { prompt: $('#prompt').value.trim(), sources: [...document.querySelectorAll('[name=source]:checked')].map(x => x.value), category: searchCategory(), condition: $('#condition').value, minPrice: price('#min-price'), maxPrice: price('#max-price'), includeTerms: terms('#include'), excludeTerms: terms('#exclude'), location: $('#location').value.trim(), region: $('#region').value, pages: Number($('#pages').value), detailLimit: Number($('#detail-limit').value), includeAuctions: $('#auctions').checked, includeUnknownPrice: $('#unknown-price').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value), brand:$('#brand').value, cpu:$('#cpu').value.trim(), gpu:$('#gpu').value.trim(), minRamGb:price('#min-ram'), minStorageGb:price('#min-storage'), minVramGb:price('#min-vram'), includeUnknownSpecs:$('#unknown-specs').checked, lookupNewPrices:$('#lookup-prices').checked, priceLookupLimit:Number($('#price-lookup-limit').value), targetProfit:Number($('#target-profit').value), priceSources:[...document.querySelectorAll('[name=price-source]:checked')].map(x => x.value) };
 }
 // Components are one choice in the form; the server searches each kind as its own category.
 const componentKinds = ['ram','cpu','gpu','ssd','psu','mb'];
@@ -55,19 +55,17 @@ const parameterTexts = {
   phones: ['Parametry telefonu', 'Výrobce, RAM a úložiště'],
 };
 const searchCategory = () => $('#category').value === 'components' ? $('#component').value : $('#category').value;
-// For components the text field is only an optional model; the description for other categories is kept aside.
-const componentExamples = { ram:'Např. DDR4 3200', cpu:'Např. Ryzen 7 5800X3D', gpu:'Např. RTX 4080', ssd:'Např. Samsung 970 EVO', psu:'Např. Corsair RM750x', mb:'Např. B550' };
-const componentLabel = kind => `${$('#component').querySelector(`option[value="${kind}"]`)?.textContent ?? kind}`;
-const searchName = f => componentKinds.includes(f.category) ? `Komponenty · ${componentLabel(f.category)}${f.prompt ? ` · ${f.prompt}` : ''}` : f.prompt;
-let promptMode = 'other';
-const promptMemory = { other: '', component: '' };
+// Every search is a category plus an optional model; each category remembers its own model text.
+const modelExamples = { laptops:'Např. Lenovo Legion 5', desktops:'Např. Dell OptiPlex 7070', phones:'Např. Pixel 9 nebo iPhone 13', ram:'Např. DDR4 3200', cpu:'Např. Ryzen 7 5800X3D', gpu:'Např. RTX 4080', ssd:'Např. Samsung 970 EVO', psu:'Např. Corsair RM750x', mb:'Např. B550' };
+const categoryLabel = id => componentKinds.includes(id) ? `Komponenty · ${$('#component').querySelector(`option[value="${id}"]`)?.textContent ?? id}` : $('#category').querySelector(`option[value="${id}"]`)?.textContent ?? id;
+const searchName = f => `${categoryLabel(f.category)}${f.prompt ? ` · ${f.prompt}` : ''}`;
+let promptCategory = null;
+const promptMemory = {};
 function applyPromptMode() {
-  const mode = $('#category').value === 'components' ? 'component' : 'other';
-  if (mode !== promptMode) { promptMemory[promptMode] = $('#prompt').value; $('#prompt').value = promptMemory[mode]; promptMode = mode; }
-  const component = mode === 'component';
-  $('#search-label').textContent = component ? 'Model komponenty · nepovinné' : 'Co bude tvůj další projekt?';
-  $('#prompt').placeholder = component ? `${componentExamples[$('#component').value]}. Bez modelu se hledají všechny nabídky.` : 'Například rozbitý herní notebook Lenovo Legion…';
-  $('#prompt').required = !component; $('#prompt').minLength = component ? 0 : 2;
+  const category = searchCategory();
+  if (promptCategory !== null && category !== promptCategory) { promptMemory[promptCategory] = $('#prompt').value; $('#prompt').value = promptMemory[category] ?? ''; }
+  promptCategory = category;
+  $('#prompt').placeholder = `${modelExamples[category]}. Bez modelu se projde celá kategorie.`;
 }
 function applyCategory(brand = $('#brand').value) {
   applyPromptMode();
@@ -94,7 +92,9 @@ function restoreFilters(data) {
   $('#lookup-prices').checked = data.lookupNewPrices ?? true;
   document.querySelectorAll('[name=price-source]').forEach(input => {input.checked = (data.priceSources ?? ['mironet','k24']).includes(input.value);});
   for (const [key,id] of Object.entries(fields)) if (data[key] !== undefined) $(`#${id}`).value = data[key] ?? '';
-  for (const [key,id] of Object.entries({ includeAuctions:'auctions', includeUnknownPrice:'unknown-price', useAI:'use-ai' })) if (typeof data[key] === 'boolean') $(`#${id}`).checked = data[key];
+  // "Podle zadání" no longer exists; older searches were almost always for pieces to repair.
+  if (data.condition === 'auto' || data.condition === undefined) $('#condition').value = 'damaged';
+  for (const [key,id] of Object.entries({ includeAuctions:'auctions', includeUnknownPrice:'unknown-price' })) if (typeof data[key] === 'boolean') $(`#${id}`).checked = data[key];
   $('#include').value = (data.includeTerms ?? []).join(', '); $('#exclude').value = (data.excludeTerms ?? []).join(', ');
   if (data.sources) document.querySelectorAll('[name=source]').forEach(x => { x.checked = data.sources.includes(x.value); });
 }
@@ -279,7 +279,7 @@ function renderJob() {
   $('#plan-box').hidden = !job.plan;
   if (job.plan) {
     const p = job.plan;
-    $('#plan-content').innerHTML = `<strong>${p.mode === 'ai' ? 'AI plán' : 'Lokální pravidla'} · ${escapeHtml(config.categories?.find(c => c.id === p.category)?.label || p.category)}</strong><p>${escapeHtml(p.explanation)}</p><p>Česky: ${escapeHtml(p.queryCs)} · eBay: ${escapeHtml(p.queryEn)}<br>Stav: ${p.damaged ? 'Hledat zmínku o poškození / netestovaném stavu' : 'Jakýkoliv'}</p><p>Skupiny výrazů (v každé stačí jeden): ${p.termGroups.map(g => `[${g.map(escapeHtml).join(' / ')}]`).join(' + ')}<br>Vyloučeno: ${escapeHtml(p.excludeTerms.join(', ') || 'nic')}</p>${p.warning ? `<p class="notice">${escapeHtml(p.warning)}</p>` : ''}`;
+    $('#plan-content').innerHTML = `<strong>${escapeHtml(categoryLabel(p.category))}</strong><p>${escapeHtml(p.explanation)}</p><p>Česky: ${escapeHtml(p.queryCs)} · eBay: ${escapeHtml(p.queryEn)}<br>Stav: ${p.damaged ? 'Hledat zmínku o poškození / netestovaném stavu' : 'Jakýkoliv'}</p><p>Skupiny výrazů (v každé stačí jeden): ${p.termGroups.map(g => `[${g.map(escapeHtml).join(' / ')}]`).join(' + ')}<br>Vyloučeno: ${escapeHtml(p.excludeTerms.join(', ') || 'nic')}</p>${p.warning ? `<p class="notice">${escapeHtml(p.warning)}</p>` : ''}`;
   }
   const scanned = Object.values(job.sources).reduce((sum, x) => sum + x.scanned, 0);
   $('#scan-summary').textContent = `${scanned} prohlédnutých nabídek · ${new Date(job.createdAt).toLocaleTimeString('cs-CZ', { hour:'2-digit', minute:'2-digit' })}`;
@@ -317,7 +317,11 @@ $('#only-new').addEventListener('change', renderItems);
 $('#hide-risky').addEventListener('change', renderItems);
 $('#results').addEventListener('click', event => {
   const example = event.target.closest('[data-prompt]');
-  if (example) { $('#prompt').value = example.dataset.prompt; $('#prompt').focus(); return; }
+  if (example) {
+    const kind = example.dataset.category;
+    if (componentKinds.includes(kind)) { $('#category').value = 'components'; $('#component').value = kind; } else $('#category').value = kind;
+    applyCategory(); $('#prompt').value = example.dataset.prompt; $('#condition').value = 'damaged'; $('#prompt').focus(); return;
+  }
   const open = event.target.closest('[data-manual-open]');
   if (open) {
     const id=open.dataset.manualOpen;editingPrices.add(id);priceErrors.delete(id);
@@ -416,7 +420,6 @@ function renderWatch(state) {
 async function refreshWatch() { try { renderWatch(await api('/api/watch')); } catch {} }
 async function saveWatch(enabled) {
   const data = filters();
-  if (enabled && !data.prompt && !componentKinds.includes(data.category)) return showError('Vyplň zadání hledání, které se má hlídat.');
   if (enabled && 'Notification' in window && Notification.permission === 'default') { try { await Notification.requestPermission(); } catch {} }
   const minProfit = $('#watch-min-profit').value.trim() === '' ? null : Number($('#watch-min-profit').value);
   try {
@@ -431,7 +434,7 @@ $('#watch-clear').addEventListener('click', async () => { try { renderWatch(awai
 setInterval(refreshWatch, 60000);
 $('#save-settings').addEventListener('click', () => { { writeLocal('lovec-rates', { useCnb: $('#use-cnb').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value) }); costs = readCosts(); writeLocal('lovec-costs', costs); lastResultsKey = ''; renderItems(); toast('Náklady jsou přepočítané. Kurzy se použijí při příštím hledání.'); } });
 function renderSearches() { $('#saved-searches').innerHTML = '<option value="">Vyber uložené…</option>' + searches.map((s,i) => `<option value="${i}">${escapeHtml(searchName(s))}</option>`).join(''); }
-$('#save-search').addEventListener('click', () => { const data = filters(); if (!data.prompt && !componentKinds.includes(data.category)) return; searches = [data, ...searches.filter(s => JSON.stringify(s) !== JSON.stringify(data))].slice(0,20); writeLocal('lovec-searches', searches); renderSearches(); toast('Hledání uloženo v prohlížeči.'); });
+$('#save-search').addEventListener('click', () => { const data = filters(); searches = [data, ...searches.filter(s => JSON.stringify(s) !== JSON.stringify(data))].slice(0,20); writeLocal('lovec-searches', searches); renderSearches(); toast('Hledání uloženo v prohlížeči.'); });
 $('#saved-searches').addEventListener('change', event => { if (event.target.value !== '') restoreFilters(searches[Number(event.target.value)]); });
 $('#delete-search').addEventListener('click', () => { const index = $('#saved-searches').value; if (index === '') return; searches.splice(Number(index),1); writeLocal('lovec-searches', searches); renderSearches(); toast('Uložené hledání smazáno.'); });
 $('#export').addEventListener('click', () => {
@@ -444,9 +447,8 @@ $('#export').addEventListener('click', () => {
 try {
   config = await api('/api/config');
   applyCategory();
-  $('#ai-label').textContent = config.aiConfigured ? 'Použít AI plán' : 'AI plán · klíč nenastaven';
   $('#ebay-hint').textContent = config.ebayConfigured ? '' : 'vyžaduje klíč';
-  $('#connection-status').innerHTML = `Bazoš a Aukro: veřejné stránky<br>AI plánování: <strong>${config.aiConfigured ? 'klíč nastaven (platnost se ověří při hledání)' : 'nenastaveno · fungují lokální pravidla'}</strong><br>eBay: <strong>${config.ebayConfigured ? 'klíče nastaveny (přístup se ověří při hledání)' : 'chybí API klíče'}</strong>`;
+  $('#connection-status').innerHTML = `Bazoš a Aukro: veřejné stránky<br>eBay: <strong>${config.ebayConfigured ? 'klíče nastaveny (přístup se ověří při hledání)' : 'chybí API klíče'}</strong>`;
   const previous = readLocal('lovec-last-filters', null); if (previous) restoreFilters(previous.detailLimit === undefined ? { ...previous, pages: Math.max(20,previous.pages || 0), detailLimit:60 } : previous);
   const rates = readLocal('lovec-rates', null); if (rates) for (const [key,id] of Object.entries({usdRate:'usd-rate',eurRate:'eur-rate',gbpRate:'gbp-rate'})) if (rates[key]) $(`#${id}`).value = rates[key];
   $('#use-cnb').checked = rates?.useCnb ?? true;

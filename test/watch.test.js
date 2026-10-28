@@ -10,7 +10,7 @@ const filters = { prompt:'Rozbitý herní notebook', sources:['bazos'] };
 
 test('Watch config is validated and the interval cannot be shorter than 30 minutes', () => {
   assert.equal(watchSchema.safeParse({ enabled:true, intervalMinutes:10, minProfit:null, filters }).success, false);
-  assert.equal(watchSchema.safeParse({ enabled:true, intervalMinutes:60, minProfit:2000, filters:{ prompt:'x', sources:['bazos'] } }).success, false);
+  assert.equal(watchSchema.safeParse({ enabled:true, intervalMinutes:60, minProfit:2000, filters:{ prompt:'x', sources:[] } }).success, false);
   assert.equal(watchSchema.parse({ enabled:true, intervalMinutes:60, minProfit:2000, filters }).filters.pages, 20);
 });
 

@@ -1,6 +1,6 @@
 # Lovec nabídek
 
-Lokální aplikace v češtině pro hledání produktů na Bazoši, Aukru a eBay. Zadáš například **rozbitý herní notebook**, nastavíš filtry a agent projde zvolený počet stránek. Zobrazuje skutečně načtené nabídky, odkazy, důvody textové shody a stav každého zdroje. Žádná demonstrační data se nevydávají za živé výsledky.
+Lokální aplikace v češtině pro hledání produktů na Bazoši, Aukru a eBay. Vybereš kategorii (notebooky, stolní PC, komponenty, telefony), případně model, například **Legion 5** nebo **RTX 4080**, nastavíš filtry a agent projde zvolený počet stránek. Zobrazuje skutečně načtené nabídky, odkazy, důvody textové shody a stav každého zdroje. Žádná demonstrační data se nevydávají za živé výsledky.
 
 ## Spuštění ve Windows
 
@@ -12,15 +12,11 @@ Copy-Item .env.example .env
 npm.cmd start
 ```
 
-Otevři **http://127.0.0.1:3210**. Bez klíčů fungují Bazoš, Aukro a lokální plánování podle pravidel. Server je přístupný pouze na tomto počítači. Pro rychlé spuštění po instalaci lze použít `spustit.cmd`.
+Otevři **http://127.0.0.1:3210**. Bez klíčů fungují Bazoš a Aukro. Server je přístupný pouze na tomto počítači. Pro rychlé spuštění po instalaci lze použít `spustit.cmd`.
 
-### AI plánování
+### Kategorie, model a filtry
 
-Do `.env` doplň `OPENAI_API_KEY`. `OPENAI_MODEL` má výchozí hodnotu `gpt-4.1-mini` a lze jej změnit na dostupný model podporující Responses API a Structured Outputs. Po úpravě restartuj server. Při chybě API aplikace viditelně přepne na pravidla.
-
-AI převádí zadání na kategorii, český/anglický dotaz, skupiny synonym a vyloučené výrazy. Volá se jednou na hledání, pouze se zadáním uživatele. Nástroje pro práci s weby a vlastní filtrování řídí lokální server. AI nemá přístup k souborům, nákupům ani zprávám prodejcům. **Nejde o AI diagnostiku oprav nebo odhad zisku.** Klíč se nikdy neposílá prohlížeči. API může být účtováno poskytovatelem.
-
-Přesnou cenu, lokalitu a další povinné výrazy zadávej do filtrů. První verze nezpracovává číselná omezení RAM, GPU výkonu apod. jako samostatné parametry. Konkrétní model nebo „16 GB“ lze požadovat textovým filtrem; názvosloví prodejců se může lišit.
+Hledání je vždy kategorie a nepovinný model. Bez modelu se projde celá kategorie; s modelem musí inzerát obsahovat každou jeho část („RTX 4080“ odpovídá i „RTX4080 SUPER“, ne „RTX 4070 Ti, vyměním za 4080“). Model se zároveň hledá textem na Aukru a eBay; Bazoš vyhledávání zakazuje, takže prochází kategorii (u telefonů sekci značky). Stav (na opravu / jakýkoliv), cena a parametry kategorie se nastavují jen ve filtrech, nic se nevyvozuje z volného textu.
 
 ### eBay
 
@@ -30,7 +26,7 @@ Potřebuje produkční `EBAY_CLIENT_ID` a `EBAY_CLIENT_SECRET` s přístupem k B
 
 ## Jak probíhá hledání
 
-1. **Plán**: AI nebo transparentně označená pravidla; ručně zvolená kategorie a stav mají přednost. V plánu je vidět každá skupina synonym (OR uvnitř skupiny, AND mezi skupinami).
+1. **Plán**: zvolená kategorie, model a filtry. V plánu je vidět každá skupina výrazů (OR uvnitř skupiny, AND mezi skupinami).
 2. **Sběr**: 1–100 stránek na web, výchozí rozsah 20. Bazoš má obvykle 20 položek na stránku; eBay se dotazuje po 50. Počet položek Aukra se řídí stránkou webu. Zdrojové nabídky se deduplikují podle ID. Při přesně opakované sadě ID se daný průchod zastaví; pouhý překryv s dřívějšími stránkami další procházení nezastavuje. Vyšší limity prodlužují běh, nikoli rychlost požadavků.
 3. **Popisy**: nastavitelných 0–500 detailů z každého českého webu (výchozí hodnota 60). Agent dává přednost nabídkám, u kterých ve výpisu chybí závada nebo požadovaná vlastnost; finální filtry uplatní po načtení detailu. Nabídky mimo cenu či lokalitu ani zjevné příslušenství zbytečně nedočítá. Neprohlédnuté a chybějící popisy jsou označené. eBay v této verzi používá jen souhrn dostupný přes API.
 4. **Filtry**: cena zboží bez dopravy, poškození nebo netestovaný stav, povinné/vyloučené výrazy, text lokality, aukce. Text se porovnává bez diakritiky; zápisy RTX3060, RTX-3060 a RTX 3060 jsou ekvivalentní. Slovník zahrnuje další řady notebooků. Krátké názvy jako ROG se hledají po slovech, aby neodpovídaly třeba slovu program. Lokalita je podřetězec, nikoli okruh v km. Neznámá cena je standardně vyloučena; lze ji výslovně povolit i při nastaveném rozpočtu. Neznámý typ prodeje se při zákazu aukcí vyloučí.
@@ -84,12 +80,12 @@ npm.cmd test
 npm.cmd run test:live
 ```
 
-Jednotkové a integrační testy ověřují parsování, měny, aukce, filtry, AI kontrakt/fallback, deduplikaci, chyby zdrojů, zrušení a bezpečnost lokálního HTTP serveru. `test:live` provede jeden skutečný výpis Bazoše a Aukra; nepoužívá klíče ani placená API. Živé OpenAI a eBay volání je možné ověřit až s vlastními klíči.
+Jednotkové a integrační testy ověřují parsování, měny, aukce, filtry, plán z kategorie a modelu, deduplikaci, chyby zdrojů, zrušení a bezpečnost lokálního HTTP serveru. `test:live` provede jeden skutečný výpis Bazoše a Aukra; nepoužívá klíče ani placená API. Živé eBay volání je možné ověřit až s vlastními klíči.
 
 ### Soubory
 
 - `server.js`: lokální HTTP API, běhy, zastavení a statická aplikace.
-- `src/planner.js`: AI plán přes [Responses API / Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses) a lokální alternativa.
+- `src/planner.js`: plán hledání z kategorie, modelu a filtrů.
 - `src/sources.js`, `src/http.js`, `src/parsers.js`: adaptéry, řízené stahování a parsování.
 - `src/matching.js`: filtry, důvody shody, upozornění.
 - `public/`: samostatné webové rozhraní bez sestavovacího kroku.

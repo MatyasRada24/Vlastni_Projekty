@@ -47,7 +47,7 @@ export function createServer() {
       if (req.method === 'GET' && path === '/api/config') return send(200, {
         searchVersion: 4, limits: { pages: 100, detailLimit: 500, priceLookupLimit: 200 },
         priceSources:Object.values(priceRetailers).map(({id,name}) => ({id,name})),
-        aiConfigured: Boolean(process.env.OPENAI_API_KEY), ebayConfigured: Boolean(process.env.EBAY_ACCESS_TOKEN || (process.env.EBAY_CLIENT_ID && process.env.EBAY_CLIENT_SECRET)),
+        ebayConfigured: Boolean(process.env.EBAY_ACCESS_TOKEN || (process.env.EBAY_CLIENT_ID && process.env.EBAY_CLIENT_SECRET)),
         categories: Object.entries(categories).map(([id, { label, group }]) => ({ id, label, group: group ?? null })),
       });
       if (path === '/api/watch' && req.method === 'GET') return send(200, await watcher.status());

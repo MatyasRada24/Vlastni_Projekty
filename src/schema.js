@@ -17,19 +17,8 @@ export const categories = {
 const categoryOf = value => Object.hasOwn(categories, value) ? value : value === 'graphics' ? 'gpu' : 'laptops';
 
 const words = z.array(z.string().trim().min(1).max(80)).max(20);
-export const planSchema = z.object({
-  category: z.enum(Object.keys(categories)),
-  queryCs: z.string().trim().min(1).max(160),
-  queryEn: z.string().trim().min(1).max(160),
-  termGroups: z.array(z.array(z.string().trim().min(1).max(80)).min(1).max(80)).max(12),
-  excludeTerms: words,
-  damaged: z.boolean(),
-  explanation: z.string().max(800),
-  keywords: z.array(z.string().trim().min(1).max(80)).max(12).optional(),
-}).strict();
-
 export const searchSchema = z.object({
-  // For components the prompt is an optional model; other categories need a description.
+  // The optional model; empty browses the whole category.
   prompt: z.string().trim().max(600).default(''),
   sources: z.array(z.enum(['bazos', 'aukro', 'ebay'])).min(1).max(3).transform(v => [...new Set(v)]),
   category: z.preprocess(categoryOf, z.enum(Object.keys(categories))),
@@ -55,12 +44,10 @@ export const searchSchema = z.object({
   detailLimit: z.number().int().min(0).max(500).default(60),
   includeAuctions: z.boolean().default(true),
   includeUnknownPrice: z.boolean().default(false),
-  useAI: z.boolean().default(true),
   usdRate: z.number().min(1).max(1000).default(23),
   eurRate: z.number().min(1).max(1000).default(25),
   gbpRate: z.number().min(1).max(1000).default(30),
-}).refine(v => v.minPrice === null || v.maxPrice === null || v.minPrice <= v.maxPrice, { message: 'Cena od nesmí být vyšší než cena do.' })
-  .refine(v => categories[v.category].group === 'components' || v.prompt.length >= 2, { message: 'Vyplň zadání hledání.' });
+}).refine(v => v.minPrice === null || v.maxPrice === null || v.minPrice <= v.maxPrice, { message: 'Cena od nesmí být vyšší než cena do.' });
 
 // The same listing texts are normalized many times per run (each search term, filter and detector),
 // so pure text functions keep a bounded cache keyed by the input string.

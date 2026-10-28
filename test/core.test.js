@@ -30,17 +30,14 @@ test('Known brand and model remain required in rule-based plans', () => {
   const plan = rulePlan('Rozbitý notebook Lenovo Legion');
   assert.ok(evaluate(listing(),plan,filters())); assert.equal(evaluate(listing({title:'HP Omen RTX nefunkční'}),plan,filters()),null);
 });
-test('Explicit condition filter overrides prompt', async () => {
-  const plan = await createPlan(filters({ condition:'any' }),{env:{}}); assert.equal(plan.damaged,false); assert.equal(plan.mode,'rules'); assert.ok(plan.warning);
-});
-test('AI plan is schema validated and fallback is clearly labelled', async () => {
-  const plan = await createPlan(filters(),{env:{OPENAI_API_KEY:'test'},fetchFn:async () => new Response(JSON.stringify({output:[{content:[{type:'output_text',text:'{"unexpected":true}'}]}]}),{status:200})});
-  assert.equal(plan.mode,'rules'); assert.ok(plan.warning);
-});
-test('AI API uses structured plan and does not send provider listings', async () => {
-  let body;
-  const plan = await createPlan(filters(),{env:{OPENAI_API_KEY:'test'},fetchFn:async (url,options) => { assert.equal(url,'https://api.openai.com/v1/responses'); body=JSON.parse(options.body); return new Response(JSON.stringify({output:[{content:[{type:'output_text',text:JSON.stringify(rulePlan('rozbitý notebook'))}]}]})); }});
-  assert.equal(plan.mode,'ai'); assert.equal(body.store,false); assert.equal(body.text.format.type,'json_schema'); assert.equal(body.input,'Rozbitý herní notebook');
+test('Condition comes from the filter; the model only narrows the category', async () => {
+  assert.equal((await createPlan(filters({ condition:'any' }))).damaged, false);
+  const legion = await createPlan(filters({ prompt:'Legion 5', condition:'damaged' }));
+  assert.equal(legion.damaged, true); assert.deepEqual(legion.keywords, ['legion 5']);
+  const all = await createPlan(filters({ prompt:'', condition:'any' }));
+  assert.deepEqual(all.keywords, []); assert.equal(all.queryCs, 'notebook');
+  // Every category accepts an empty model.
+  for (const category of ['laptops','desktops','phones','gpu']) assert.equal(searchSchema.parse({ prompt:'', sources:['bazos'], category }).prompt, '');
 });
 test('Healthy listings with negated damage are excluded', () => {
   assert.equal(damageEvidence(listing({title:'Notebook Lenovo Legion',description:'Není poškozený. Bez vad. Not broken.'})).length,0);
@@ -105,7 +102,6 @@ test('Components search the chosen kind; an optional model narrows it', async ()
   // A model may contain words that name other categories.
   const board = await createPlan(searchSchema.parse({ prompt:'ASUS ROG Strix B550-F', sources:['bazos'], category:'mb' }), { env:{} });
   assert.ok(board.keywords.includes('rog'));
-  assert.throws(() => searchSchema.parse({ prompt:'', sources:['bazos'], category:'laptops' }));
 });
 test('Required terms are searched for, not just filtered', async () => {
   const f = searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos','aukro','ebay'], category:'phones', includeTerms:['Google pixel 10a'], condition:'any', maxPrice:null });
