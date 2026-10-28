@@ -1,6 +1,6 @@
-import { normalize, memo } from './schema.js';
+import { normalize, memo, categories } from './schema.js';
 import { hasTerm, groupMatches, productGroups } from './vocabulary.js';
-import { extractHardware, hardwareMatches } from './hardware.js';
+import { specsFor, hardwareMatches } from './hardware.js';
 import { classifyListing } from './defects.js';
 import { regionOf } from './regions.js';
 
@@ -33,8 +33,9 @@ const accessoryStart = '^(?:originalni |original |nova |novy |nove |nahradni |oe
 const accessories = {
   laptops: /(?:nabijeck|adapter|bateri|klavesnic|displej|panty|kryt|obal|pouzdro|dock|charger|keyboard|battery|lcd|screen|motherboard|zakladni desk)/,
   phones: /(?:kryt|obal|pouzdr|tvrzen|ochrann|sklo|folie|nabijeck|nabijec|adapter|kabel|drzak|bateri|displej|lcd|sluchatk|case|cover|charger|screen protector|powerbank|stojan|reproduktor)/,
-  graphics: /(?:chladic|ventilator|backplate|riser|drzak|kabel|redukce|vodni blok|waterblock|bracket|zdroj)/,
-  consoles: /(?:ovladac|ovladace|gamepad|joystick|controller|hra |hry |kabel|nabijec|nabijeck|stojan|obal|pouzdr|kryt|skin|polep|headset|sluchatk|volant|disk |hdd|ssd|chladic|ventilator)/,
+  desktops: /(?:klavesnic|mys |mysi|monitor|reproduktor|kabel|webkamer|sluchatk|repro)/,
+  gpu: /(?:chladic|ventilator|backplate|riser|drzak|kabel|redukce|vodni blok|waterblock|bracket|zdroj)/,
+  cpu: /(?:chladic|ventilator|pasta|cooler)/,
 };
 function isAccessory(item, plan) {
   const pattern = accessories[plan.category];
@@ -57,7 +58,8 @@ export function productMatches(item, plan, filters) {
   // A listing taken from the category itself (phone category page, eBay category) needs no generic
   // "telefon / phone" word; only the more specific groups such as a brand or model still apply.
   const generic = new Set(productGroups[plan.category] ?? []);
-  const fromCategory = item.category === plan.category && plan.category !== 'all';
+  // Sections mixing kinds (Bazoš "Hard disky, SSD", "Skříně, zdroje") still need the listing to name the kind.
+  const fromCategory = item.category === plan.category && !categories[plan.category]?.strict;
   if (!plan.termGroups.every(group => (fromCategory && group.every(term => generic.has(term))) || groupMatches(item, group, plan.category))) return false;
   if (!filters.includeTerms.every(term => hasTerm(text, term))) return false;
   if (plan.excludeTerms.some(term => hasTerm(text, term))) return false;
@@ -74,8 +76,9 @@ export function detailCandidate(item, plan, filters) {
   const categoryMatch = item.category === plan.category || (productGroups[plan.category] ?? []).some(term => hasTerm(text, term));
   if (!categoryMatch && !plan.termGroups.some(group => groupMatches(item, group, plan.category))) return false;
   // Spend reads on unconfirmed candidates first, instead of repeatedly inspecting already confirmed matches.
-  const specs = extractHardware(item);
-  const needsSpecs = (filters.model && !specs.model) || (filters.cpu && !specs.cpu) || (filters.gpu && !specs.gpu) || (filters.minRamGb != null && specs.ramGb === null) || (filters.minStorageGb != null && specs.storageGb === null);
+  const specs = specsFor(item, plan.category) ?? {};
+  // A filtered parameter is still unknown when the listing passes only with unknown values allowed.
+  const needsSpecs = !hardwareMatches(specs, { ...filters, includeUnknownSpecs:false }, plan.category) && hardwareMatches(specs, { ...filters, includeUnknownSpecs:true }, plan.category);
   const needsValuation = plan.category === 'laptops' && filters.lookupNewPrices && !specs.sku && ['model','cpu','gpu','ramGb','storageGb'].some(key => specs[key] == null && !(key === 'gpu' && specs.brand === 'APPLE'));
   return !!needsSpecs || !!needsValuation || !productMatches(item, plan, filters) || (plan.damaged && !damageEvidence(item).length);
 }
@@ -101,7 +104,7 @@ export function rejectionReason(item, plan, filters) {
   if (plan.excludeTerms.some(term => hasTerm(text, term))) return 'Obsahuje vyloučený výraz';
   if (isAccessory(item, plan)) return 'Příslušenství nebo náhradní díl';
   if (!productMatches(item, plan, filters)) return 'Neodpovídá hledanému zboží nebo modelu';
-  if (plan.category === 'laptops' && !hardwareMatches(extractHardware(item), filters)) return 'Nesplňuje parametry notebooku';
+  if (!hardwareMatches(specsFor(item, plan.category), filters, plan.category)) return 'Nesplňuje zadané parametry';
   if (plan.damaged && !damageEvidence(item).length) return 'Bez zmínky o závadě (hledáš kusy na opravu)';
   if (!filters.includeAuctions && (item.saleType === 'auction' || item.saleType === 'unknown')) return 'Aukce (vypnuté v nastavení)';
   if ((filters.location && !normalize(item.location).includes(normalize(filters.location))) || (filters.region && regionOf(item.location) !== filters.region)) return 'Mimo zvolenou lokalitu';
@@ -115,9 +118,9 @@ export function rejectionReason(item, plan, filters) {
 
 export function evaluate(item, plan, filters) {
   if (!productMatches(item, plan, filters)) return null;
-  const specs = extractHardware(item);
-  // Model, CPU, GPU, RAM and storage fields describe notebooks; remembered values must not empty a phone search.
-  if (plan.category === 'laptops' && !hardwareMatches(specs, filters)) return null;
+  // Each category checks only its own parameters; values remembered from another category are ignored.
+  const specs = specsFor(item, plan.category);
+  if (!hardwareMatches(specs, filters, plan.category)) return null;
   const evidence = damageEvidence(item);
   if (plan.damaged && !evidence.length) return null;
   if (!filters.includeAuctions && (item.saleType === 'auction' || item.saleType === 'unknown')) return null;

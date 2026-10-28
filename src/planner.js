@@ -1,25 +1,23 @@
 import { normalize, planSchema, categories } from './schema.js';
-import { productGroups, gamingTerms as gaming, hasTerm } from './vocabulary.js';
+import { productGroups, gamingTerms as gaming } from './vocabulary.js';
 
 
 export function rulePlan(prompt, forcedCategory = null) {
   const text = normalize(prompt);
-  let category = 'all';
-  if (forcedCategory) category = forcedCategory;
-  else if (/grafick|graphics|gpu/.test(text)) category = 'graphics';
-  else if (/konzol|console|playstation|xbox|nintendo|\bps[45]\b/.test(text)) category = 'consoles';
-  else if (/telefon|phone|galaxy/.test(text)) category = 'phones';
-  else if (/notebook|laptop|macbook|thinkpad/.test(text)) category = 'laptops';
-  else category = Object.entries(productGroups).find(([, terms]) => terms.some(term => hasTerm(text, term)))?.[0] ?? 'all';
+  // The form always names the category; detection only serves an AI plan that has to be checked against it.
+  const category = forcedCategory ?? (/telefon|phone|iphone|galaxy|pixel/.test(text) ? 'phones' : /stolni|pocitac|desktop|sestava/.test(text) ? 'desktops' : 'laptops');
   const damaged = /rozbit|nefunkc|nefung|nezap|nenab|netestovan|poskozen|na opravu|na dily|vadn|broken|for parts|faulty|untested|nejde zapnout/.test(text);
   const wantsGaming = /herni|gaming/.test(text);
-  const termGroups = category === 'all' ? [] : [[...productGroups[category]]];
+  const termGroups = [[...productGroups[category]]];
   if (wantsGaming && category === 'laptops') termGroups.push(gaming);
   // Free text is treated as terms, never as executable instructions. Complex constraints need explicit filters or AI.
-  const residual = text.replace(/na (?:opravu|dily)|nejde zapnout/g, '').split(/[^a-z0-9]+/).filter(w => (w.length > 1 || /^\d$/.test(w)) && !/^(hledam|najdi|chci|prosim|koupit|rozbit.*|nefunkc.*|nefung.*|nezap.*|nenab.*|netestovan.*|untested|poskozen.*|vadn.*|herni|gaming|notebook.*|laptop.*|grafick.*|kart.*|konzol.*|mobilni|telefon.*|broken|faulty|for|parts|do|od|kc|czk|korun|max|cena|levny|levne|levnou|levna|levneho|opravu|dily)$/.test(w));
+  const residual = text.replace(/na (?:opravu|dily)|nejde zapnout|stolni pc/g, '').split(/[^a-z0-9]+/).filter(w => (w.length > 1 || /^\d$/.test(w)) && !/^(hledam|najdi|chci|prosim|koupit|rozbit.*|nefunkc.*|nefung.*|nezap.*|nenab.*|netestovan.*|untested|poskozen.*|vadn.*|herni|gaming|notebook.*|laptop.*|grafick.*|kart.*|konzol.*|mobil.*|telefon.*|phone|pc|pocitac.*|stolni|desktop|sestava|komponent.*|pamet.*|procesor.*|zdroj.*|zakladni|desk.*|ram|cpu|gpu|ssd|psu|mb|broken|faulty|for|parts|do|od|kc|czk|korun|max|cena|levny|levne|levnou|levna|levneho|opravu|dily)$/.test(w));
   const withoutBudget = text.replace(/\b(?:do|od|max)\s+[\d\s.,]+\s*(?:kc|czk|korun)?/g, '');
-  // With a category chosen by hand, product words of other categories ("Legion", "RTX") cannot be required.
-  const foreign = forcedCategory ? new Set(Object.entries(productGroups).filter(([id]) => id !== category).flatMap(([, terms]) => terms).concat(gaming).map(normalize)) : new Set();
+  // Product words of other categories ("Legion" in a phone search) cannot be required. A computer
+  // may name its parts and gaming line ("Legion RTX 3060"), so those stay for notebooks and PCs.
+  const computer = category === 'laptops' || category === 'desktops';
+  const own = new Set([...productGroups[category], ...(computer ? [...gaming, ...productGroups.gpu, ...productGroups.cpu] : [])].map(normalize));
+  const foreign = new Set([...Object.entries(productGroups).filter(([id]) => id !== category).flatMap(([, terms]) => terms), ...gaming].map(normalize).filter(term => !own.has(term)));
   const remaining = residual.filter(w => withoutBudget.split(/[^a-z0-9]+/).includes(w) && !foreign.has(w))
     // "Pixel 9" or "RTX 3060" is one model name: a lone "9" would also match the code "G9S9B" of a Pixel 6.
     .reduce((list, word) => {
@@ -29,24 +27,15 @@ export function rulePlan(prompt, forcedCategory = null) {
       return list;
     }, []);
   for (const word of remaining.slice(0, 8)) termGroups.push([word]);
-  const cs = { laptops: 'notebook', graphics: 'grafická karta', consoles: 'herní konzole', phones: 'telefon', all: prompt }[category];
-  const en = { laptops: 'laptop', graphics: 'graphics card', consoles: 'game console', phones: 'phone', all: prompt }[category];
+  const cs = { laptops: 'notebook', desktops: 'počítač', ram: 'paměť RAM', cpu: 'procesor', gpu: 'grafická karta', ssd: 'SSD', psu: 'zdroj', mb: 'základní deska', phones: 'telefon' }[category];
+  const en = { laptops: 'laptop', desktops: 'desktop computer', ram: 'memory', cpu: 'processor', gpu: 'graphics card', ssd: 'ssd', psu: 'power supply', mb: 'motherboard', phones: 'phone' }[category];
   return { category, keywords: remaining.slice(0, 8), queryCs: [cs, ...remaining].join(' ').slice(0,160), queryEn: [wantsGaming && category === 'laptops' ? 'gaming' : '', en, ...remaining].filter(Boolean).join(' ').slice(0,160), termGroups, excludeTerms: [], damaged, explanation:'Lokální pravidla: synonyma produktu, herní výbava a zmínky o poškození. Cenu, lokalitu a další přesné požadavky nastav ve filtrech.' };
-}
-
-// The single category whose product names appear in the terms. Gaming words such as RTX or Legion
-// are left out: "RTX" in a notebook search must not switch it to graphics cards.
-export function categoryOfTerms(terms) {
-  const text = terms.join(' ');
-  const skip = new Set(gaming.map(normalize));
-  const found = Object.entries(productGroups).filter(([, group]) => group.some(term => !skip.has(normalize(term)) && hasTerm(text, term))).map(([id]) => id);
-  return found.length === 1 ? found[0] : null;
 }
 
 const schema = {
   type: 'object', additionalProperties: false,
   properties: {
-    category: { type: 'string', enum: ['laptops','graphics','consoles','phones','all'] },
+    category: { type: 'string', enum: Object.keys(categories) },
     queryCs: { type: 'string' }, queryEn: { type: 'string' },
     termGroups: { type: 'array', items: { type: 'array', items: { type: 'string' } } },
     excludeTerms: { type: 'array', items: { type: 'string' } },
@@ -56,7 +45,7 @@ const schema = {
 };
 
 export async function createPlan(filters, { env = process.env, fetchFn = fetch, signal } = {}) {
-  let plan = rulePlan(filters.prompt), mode = 'rules', warning = null;
+  let plan = rulePlan(filters.prompt, filters.category), mode = 'rules', warning = null;
   if (filters.useAI && env.OPENAI_API_KEY) {
     try {
       const response = await fetchFn('https://api.openai.com/v1/responses', {
@@ -78,21 +67,19 @@ export async function createPlan(filters, { env = process.env, fetchFn = fetch, 
       warning = 'AI plán se nepodařilo získat. Použita lokální pravidla; zkontroluj plán a filtry.';
     }
   } else if (filters.useAI) warning = 'OPENAI_API_KEY není nastavený. Vyhledávání používá lokální pravidla.';
-  // A category chosen by hand rebuilds the search terms; otherwise "Rozbitý herní notebook" would keep
-  // requiring notebook words inside the phone or console category.
-  // "Musí obsahovat: Google Pixel 10a" names a phone even when the prompt still says notebook.
-  const includeCategory = filters.category === 'auto' ? categoryOfTerms(filters.includeTerms) : null;
-  const chosen = filters.category !== 'auto' ? filters.category : includeCategory;
-  if (chosen && chosen !== 'all' && plan.category !== chosen) {
-    const forced = rulePlan(filters.prompt, chosen);
-    const reason = filters.category !== 'auto' ? `Zvolená kategorie „${categories[chosen].label}“ má přednost před zadáním.` : `Povinné výrazy určují kategorii „${categories[chosen].label}“.`;
-    plan = { ...forced, damaged: plan.damaged, explanation: `${reason} ${forced.explanation}` };
+  // The chosen category rebuilds the search terms; otherwise "Rozbitý herní notebook" would keep
+  // requiring notebook words inside the phone or component category.
+  if (plan.category !== filters.category) {
+    const forced = rulePlan(filters.prompt, filters.category);
+    plan = { ...forced, damaged: plan.damaged, explanation: `Zvolená kategorie „${categories[filters.category].label}“ má přednost před zadáním. ${forced.explanation}` };
     mode = 'rules';
-  } else if (filters.category !== 'auto') plan.category = filters.category;
+  }
   // Keywords are what the marketplaces search for: model words from the prompt plus required terms.
   // Without them Bazoš and Aukro only browse the newest listings of the whole category.
   const own = Array.isArray(plan.keywords) ? plan.keywords : rulePlan(filters.prompt, plan.category).keywords;
-  const keywords = [...new Set([...own, ...filters.includeTerms].map(x => x.trim()).filter(Boolean))];
+  // A chosen manufacturer narrows the search itself (Bazoš brand section, Aukro and eBay text), not just the filter.
+  const brand = filters.brand && ['laptops','phones'].includes(plan.category) ? [filters.brand.toLowerCase()] : [];
+  const keywords = [...new Set([...brand, ...own, ...filters.includeTerms].map(x => x.trim()).filter(Boolean))];
   plan.keywords = keywords.filter(word => !keywords.some(other => other !== word && normalize(other).split(/\s+/).includes(normalize(word))));
   const append = (query, term) => normalize(query).includes(normalize(term)) ? query : `${query} ${term}`.slice(0, 160);
   for (const term of filters.includeTerms) { plan.queryCs = append(plan.queryCs, term); plan.queryEn = append(plan.queryEn, term); }

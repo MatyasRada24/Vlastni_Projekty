@@ -2,8 +2,13 @@ import { normalize, memo } from './schema.js';
 
 export const productGroups = {
   laptops: ['notebook', 'laptop', 'macbook', 'thinkpad', 'ideapad', 'probook', 'elitebook', 'latitude', 'zenbook', 'vivobook', 'legion', 'predator', 'nitro', 'alienware', 'victus', 'omen', 'pavilion', 'inspiron', 'vostro', 'aspire', 'swift', 'travelmate', 'lifebook', 'satellite', 'yoga', 'chromebook', 'expertbook', 'precision', 'tuf', 'rog', 'katana', 'sword', 'cyborg', 'stealth', 'raider', 'aorus', 'gigabyte aero'],
-  graphics: ['grafick', 'graphics', 'gpu', 'geforce', 'radeon', 'rtx', 'gtx', 'quadro', 'arc a', 'arc b'],
-  consoles: ['konzol', 'console', 'playstation', 'xbox', 'nintendo', 'switch', 'ps2', 'ps3', 'ps4', 'ps5', 'psp', 'ps vita', 'steam deck', 'rog ally', 'legion go', 'wii'],
+  desktops: ['pocitac', 'pc', 'desktop', 'sestava', 'computer', 'tower', 'all in one', 'imac', 'mac mini', 'mini pc'],
+  ram: ['ram', 'pamet', 'ddr3', 'ddr4', 'ddr5', 'dimm', 'sodimm', 'so dimm', 'memory'],
+  cpu: ['procesor', 'cpu', 'processor', 'ryzen', 'intel core', 'core i3', 'core i5', 'core i7', 'core i9', 'xeon', 'pentium', 'celeron', 'athlon'],
+  gpu: ['grafick', 'graphics', 'gpu', 'geforce', 'radeon', 'rtx', 'gtx', 'quadro', 'arc a', 'arc b'],
+  ssd: ['ssd', 'nvme', 'm 2'],
+  psu: ['zdroj', 'psu', 'power supply'],
+  mb: ['zakladni desk', 'motherboard', 'mainboard', 'deska'],
   phones: ['telefon', 'phone', 'iphone', 'smartphone', 'mobil', 'galaxy', 'pixel', 'redmi', 'poco', 'oneplus', 'xiaomi', 'motorola', 'moto g', 'nokia', 'honor', 'huawei', 'oppo', 'realme', 'vivo', 'xperia', 'nothing phone', 'fairphone', 'cat s'],
 };
 export const gamingTerms = ['herni', 'gaming', 'rtx', 'gtx', 'geforce', 'radeon rx', 'legion', 'rog', 'tuf', 'predator', 'nitro', 'alienware', 'victus', 'omen', 'katana', 'sword', 'cyborg', 'stealth', 'raider', 'aorus'];
@@ -17,7 +22,7 @@ export const matchText = value => matchTextOf(String(value ?? ''));
 // Padded haystack and its word list are reused for every term checked against the same listing.
 const padded = memo(text => ` ${matchText(text)} `);
 const words = memo(text => matchText(text).split(' '));
-const stems = new Set(['notebook','laptop','grafick','konzol','telefon','herni']);
+const stems = new Set(['notebook','laptop','grafick','telefon','herni','pocitac','procesor','pamet','zdroj','zakladni desk','deska']);
 export function hasTerm(text, term) {
   const needle = matchText(term);
   if (!needle) return false;
@@ -28,7 +33,7 @@ export function hasTerm(text, term) {
 export function expandGroup(group, category) {
   const normalized = group.map(normalize);
   // Enrich generic product/gaming groups without broadening an explicit model or brand requirement.
-  const generic = { laptops:['notebook','laptop','notebooky','laptops'], graphics:['grafick','graficka karta','graphics card','gpu'], consoles:['konzol','konzole','console','game console'], phones:['telefon','mobilni telefon','phone','smartphone'] }[category] ?? [];
+  const generic = { laptops:['notebook','laptop','notebooky','laptops'], desktops:['pocitac','pc','desktop'], gpu:['grafick','graficka karta','graphics card','gpu'], phones:['telefon','mobilni telefon','phone','smartphone'] }[category] ?? [];
   if (normalized.some(t => generic.includes(t))) return [...new Set([...group, ...(productGroups[category] ?? [])])];
   if (category === 'laptops' && normalized.some(t => ['herni','gaming','herni notebook','gaming laptop'].includes(t))) return [...new Set([...group, ...gamingTerms])];
   return group;

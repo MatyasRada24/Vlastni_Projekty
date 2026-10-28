@@ -101,7 +101,7 @@ const sizeGb = (n, unit) => Number(n.replace(',', '.')) * (/^t/.test(unit) ? 100
 const storageTypeOf = text => ({hdd:'HDD',emmc:'EMMC'})[text.match(/\b(ssd|nvme|m\.?2|hdd|emmc)\b/)?.[1]] ?? (/\b(?:ssd|nvme|m\.?2)\b/.test(text) ? 'SSD' : null);
 // VRAM after a GPU name ("RTX 4060 8GB GDDR6") must never be read as RAM or disk.
 const withoutGpuMemory = text => text
-  .replace(/\b(?:rtx|gtx|mx|rx|radeon(?:\s+pro)?|quadro|arc)[\s-]*(?:[a-z]?[\s-]*\d{3,4}[\s-]*(?:ti|super|xt|m|ada)?[\s-]*)?\d{1,2}\s*gb(?:\s*g?ddr\d\w*)?/g, ' ')
+  .replace(/\b(?:rtx|gtx|mx|rx|radeon(?:\s+pro)?|quadro|arc)[\s-]*(?:[a-z]?[\s-]*\d{3,4}[\s-]*(?:ti|super|xt|m|ada)?[\s-]*)?\d{1,2}\s*gb(?!\s*(?:(?:lp)?ddr|ram|operacni|ssd|hdd|nvme|emmc))(?:\s*g?ddr\d\w*)?/g, ' ')
   .replace(/\b\d{1,2}\s*gb\s*(?:g?ddr\d\w*\s*)?(?:vram|gddr\d\w*)/g, ' ')
   .replace(/\b(?:vlastni|dedikovan\w*|graficke|video)\s+\d{1,2}\s*gb(?:\s*g?ddr\d\w*)?(?:\s*pamet\w*)?/g, ' ')
   .replace(/\b\d{1,2}\s*gb\s*(?:g?ddr\d\w*\s*)?(?:vlastni|graficke|video)\s*pamet\w*/g, ' ');
@@ -220,18 +220,74 @@ function extract(rawTitle, rawDescription) {
   }
   // Every MacBook since 2016 ships with an SSD; older HDD models state it explicitly.
   if (result.brand === 'APPLE' && result.storageGb != null && !result.storageType && !ambiguous.includes('storageType')) result.storageType = 'SSD';
+  result.vramGb = vramOf(title, description, result);
   result.ambiguous = ambiguous;
   return result;
 }
 
-export function hardwareMatches(specs, filters) {
-  const checks = [['model',filters.model],['cpu',filters.cpu],['gpu',filters.gpu]];
-  for (const [key,wanted] of checks) if (wanted) {
-    if (!specs[key]) { if (!filters.includeUnknownSpecs) return false; }
-    else if (!canonical(specs[key]).includes(canonical(wanted))) return false;
+// Notebook GPUs ship with one VRAM size; chips sold with several sizes (RTX 3050, 3080, GTX 1050) stay unknown.
+const laptopVram = { 'GTX 1050 TI':4, 'GTX 1060':6, 'GTX 1070':8, 'GTX 1080':8, 'GTX 1650':4, 'GTX 1650 TI':4, 'GTX 1660 TI':6, 'RTX 2050':4, 'RTX 2060':6, 'RTX 2070':8, 'RTX 2070 SUPER':8, 'RTX 2080':8, 'RTX 2080 SUPER':8, 'RTX 3050 TI':4, 'RTX 3060':6, 'RTX 3070':8, 'RTX 3070 TI':8, 'RTX 3080 TI':16, 'RTX 4050':6, 'RTX 4060':8, 'RTX 4070':8, 'RTX 4080':12, 'RTX 4090':16, 'RTX 5050':8, 'RTX 5060':8, 'RTX 5070':8, 'RTX 5070 TI':12, 'RTX 5080':16, 'RTX 5090':24 };
+const vramPatterns = [
+  /\b(?:rtx|gtx|rx|radeon(?:\s+pro)?|quadro|arc)[\s-]*(?:[a-z]?[\s-]*\d{3,4}[\s-]*(?:ti|super|xt|m|ada)?[\s-]*)?(\d{1,2})\s*gb\b(?!\s*(?:(?:lp)?ddr|ram|operacni|ssd|hdd|nvme|emmc))/g,
+  /\b(\d{1,2})\s*gb\s*(?:g?ddr\d\w*\s*)?(?:vram|gddr\d\w*)/g,
+  /\bvram\s*[:=-]?\s*(\d{1,2})\s*gb\b/g,
+  /\b(?:vlastni|dedikovan\w*|graficke|video)\s+(?:pamet\w*\s*[:=-]?\s*)?(\d{1,2})\s*gb\b/g,
+];
+function vramOf(title, description, specs) {
+  for (const text of [title, description]) {
+    const sizes = [...new Set(vramPatterns.flatMap(re => [...text.matchAll(re)].map(m => +m[1])).filter(n => n >= 1 && n <= 48))];
+    if (sizes.length === 1) return sizes[0];
+    if (sizes.length > 1) return null;
   }
-  for (const [key,min] of [['ramGb',filters.minRamGb],['storageGb',filters.minStorageGb]]) if (min != null) {
-    if (specs[key] === null) { if (!filters.includeUnknownSpecs) return false; }
+  if (!specs.gpu) return integratedChip(specs) ? 0 : null;
+  if (/^MX/.test(specs.gpu)) return 2;
+  // Integrated graphics (Iris Xe, Radeon Graphics, UHD) share system memory.
+  return discreteGpu.test(specs.gpu) ? laptopVram[specs.gpu] ?? null : 0;
+}
+
+export const phoneBrands = [['APPLE',/\b(?:apple|iphone)\b/], ['SAMSUNG',/\b(?:samsung|galaxy)\b/], ['XIAOMI',/\b(?:xiaomi|redmi|poco)\b/], ['GOOGLE',/\b(?:google|pixel)\b/], ['HUAWEI',/\bhuawei\b/], ['HONOR',/\bhonor\b/], ['MOTOROLA',/\b(?:motorola|moto [a-z]\d*)\b/], ['NOKIA',/\bnokia\b/], ['ONEPLUS',/\bone ?plus\b/], ['OPPO',/\boppo\b/], ['REALME',/\brealme\b/], ['VIVO',/\bvivo\b/], ['SONY',/\b(?:sony|xperia)\b/], ['NOTHING',/\bnothing phone\b/], ['FAIRPHONE',/\bfairphone\b/]];
+const phoneStorage = new Set([16, 32, 64, 128, 256, 512, 1000]);
+function phoneParts(text) {
+  const brand = [...new Set(phoneBrands.filter(([, re]) => re.test(text)).map(([b]) => b))];
+  const ram = [], storage = [];
+  // "8/256 GB", "12+512": memory first, then storage. "Stav 10/10" has no storage size and is skipped.
+  for (const m of text.matchAll(/\b(\d{1,2})\s*(?:gb)?\s*[/+]\s*(\d{2,3}|1)\s*(gb|tb)?\b/g)) {
+    const gb = sizeGb(m[2], m[3] ?? (m[2] === '1' ? 'tb' : 'gb'));
+    if (+m[1] <= 24 && phoneStorage.has(gb)) { ram.push(+m[1]); storage.push(gb); }
+  }
+  ram.push(...[...text.matchAll(/\b(\d{1,2})\s*gb\s*(?:lp)?(?:ram|operacni)/g)].map(m => +m[1]), ...[...text.matchAll(/\b(?:ram|operacni pamet)\s*[:=-]?\s*(\d{1,2})\s*gb\b/g)].map(m => +m[1]));
+  storage.push(...[...text.matchAll(/\b(?:uloziste|interni pamet|kapacita|storage)\s*[:=-]?\s*(\d{2,4}|1|2)\s*(gb|tb)\b/g)].map(m => sizeGb(m[1], m[2])));
+  // A lone "128 GB" on a phone is storage; 8 or 16 GB alone could be either and stays unknown.
+  for (const m of text.matchAll(/\b(\d{2,4}|1|2)\s*(gb|tb)\b(?!\s*(?:lp)?(?:ram|ddr|operacni))/g)) { const gb = sizeGb(m[1], m[2]); if (gb >= 32 && phoneStorage.has(gb)) storage.push(gb); }
+  return { brand, ram: [...new Set(ram.filter(n => n >= 1 && n <= 24))], storage: [...new Set(storage)] };
+}
+const phoneCached = memo(key => {
+  const [title, description] = key.split('\u0000').map(prepare);
+  const tiers = [phoneParts(title), phoneParts(description)];
+  // Title first; several values in the deciding text leave the field unknown.
+  const pick = key => { for (const tier of tiers) { if (tier[key].length === 1) return tier[key][0]; if (tier[key].length > 1) return null; } return null; };
+  return { kind: 'phone', brand: pick('brand'), ramGb: pick('ram'), storageGb: pick('storage') };
+}, 10000);
+export const extractPhone = item => ({ ...phoneCached(`${item.title ?? ''}\u0000${item.description ?? ''}`) });
+
+// Parameters the form offers per category. Components are filtered by kind (the category) and price only.
+const filterKeys = { laptops: ['brand','ramGb','storageGb','vramGb'], desktops: ['cpu','gpu','ramGb','storageGb'], phones: ['brand','ramGb','storageGb'] };
+export const specsFor = (item, category) => category === 'phones' ? extractPhone(item) : category === 'laptops' || category === 'desktops' ? extractHardware(item) : null;
+
+export function hardwareMatches(specs, filters, category) {
+  const active = new Set(category ? filterKeys[category] ?? [] : ['brand','cpu','gpu','ramGb','storageGb','vramGb']);
+  if (!active.size || !specs) return true;
+  const unknown = () => filters.includeUnknownSpecs;
+  if (active.has('brand') && filters.brand) {
+    if (!specs.brand) { if (!unknown()) return false; }
+    else if (canonical(specs.brand) !== canonical(filters.brand)) return false;
+  }
+  for (const key of ['cpu','gpu']) if (active.has(key) && filters[key]) {
+    if (!specs[key]) { if (!unknown()) return false; }
+    else if (!canonical(specs[key]).includes(canonical(filters[key]))) return false;
+  }
+  for (const [key,min] of [['ramGb',filters.minRamGb],['storageGb',filters.minStorageGb],['vramGb',filters.minVramGb]]) if (active.has(key) && min != null) {
+    if (specs[key] == null) { if (!unknown()) return false; }
     else if (specs[key] < min) return false;
   }
   return true;

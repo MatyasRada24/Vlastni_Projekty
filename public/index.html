@@ -47,25 +47,27 @@
           <div class="prompt-row"><textarea id="prompt" name="prompt" rows="2" maxlength="600" required minlength="2" placeholder="Například rozbitý herní notebook Lenovo Legion…">Rozbitý herní notebook</textarea><button id="search-button" class="primary" type="submit">Najít nabídky <span aria-hidden="true">→</span></button><button id="cancel-button" class="secondary" type="button" hidden>Zastavit</button></div>
           <div class="search-meta"><div class="sources-select" aria-label="Prohledávané weby"><label><input type="checkbox" name="source" value="bazos" checked> Bazoš</label><label><input type="checkbox" name="source" value="aukro" checked> Aukro</label><label><input type="checkbox" name="source" value="ebay" checked> eBay <small id="ebay-hint"></small></label></div><label class="ai-toggle"><input type="checkbox" id="use-ai" checked> <span id="ai-label">AI plánování</span></label></div>
           <div class="filters">
-            <label>Kategorie<select id="category"><option value="auto">Rozpoznat ze zadání</option></select></label>
+            <label>Kategorie<select id="category"><option value="laptops">Notebooky</option><option value="desktops">Stolní PC</option><option value="components">Komponenty</option><option value="phones">Telefony</option></select></label>
+            <label data-for="components">Druh komponenty<select id="component"><option value="ram">RAM</option><option value="cpu">CPU</option><option value="gpu">GPU</option><option value="ssd">SSD</option><option value="psu">PSU · zdroj</option><option value="mb">MB · základní deska</option></select></label>
             <label>Cena od · Kč<input id="min-price" type="number" min="0" max="10000000" placeholder="Bez minima"></label>
             <label>Cena do · Kč<input id="max-price" type="number" min="0" max="10000000" value="6000" placeholder="Bez limitu"></label>
             <label>Stav<select id="condition"><option value="auto">Podle zadání</option><option value="damaged">Na opravu / díly</option><option value="any">Jakýkoliv stav</option></select></label>
             <label>Stránek na web · 1–100<input id="pages" type="number" min="1" max="100" step="1" value="20" list="page-presets" required><datalist id="page-presets"><option value="10"><option value="20"><option value="50"><option value="100"></datalist></label>
           </div>
-          <details class="advanced"><summary>Parametry notebooku a ocenění <span class="summary-hint">Model, CPU, GPU, paměť a cenové zdroje</span></summary>
+          <details class="advanced" id="parameters"><summary><span id="parameters-title">Parametry notebooku a ocenění</span> <span class="summary-hint" id="parameters-hint">Výrobce, RAM, SSD, VRAM a cenové zdroje</span></summary>
             <div class="advanced-grid hardware-filters">
-              <label>Model obsahuje<input id="model" maxlength="80" placeholder="Např. LOQ 15IRH8"></label>
-              <label>Procesor obsahuje<input id="cpu" maxlength="80" placeholder="Např. i7-12700H"></label>
-              <label>Grafika obsahuje<input id="gpu" maxlength="80" placeholder="Např. RTX 3060"></label>
-              <label>RAM alespoň · GB<input id="min-ram" type="number" min="1" max="256" placeholder="Bez minima"></label>
-              <label>Disk alespoň · GB<input id="min-storage" type="number" min="1" max="32000" placeholder="Bez minima"></label>
-              <label>Požadovaný hrubý rozdíl · Kč<input id="target-profit" type="number" min="0" max="10000000" value="0" required></label>
-              <label>Ověřit cen nových modelů · 1–200<input id="price-lookup-limit" type="number" min="1" max="200" value="30" required></label>
+              <label data-for="laptops phones">Výrobce<select id="brand"><option value="">Všichni výrobci</option></select></label>
+              <label data-for="desktops">Procesor obsahuje<input id="cpu" maxlength="80" placeholder="Např. i7-12700 nebo Ryzen 5"></label>
+              <label data-for="desktops">Grafika obsahuje<input id="gpu" maxlength="80" placeholder="Např. RTX 3060"></label>
+              <label data-for="laptops desktops phones">RAM alespoň · GB<input id="min-ram" type="number" min="1" max="256" placeholder="Bez minima"></label>
+              <label data-for="laptops desktops phones"><span id="storage-label">SSD alespoň · GB</span><input id="min-storage" type="number" min="1" max="32000" placeholder="Bez minima"></label>
+              <label data-for="laptops">VRAM alespoň · GB<input id="min-vram" type="number" min="1" max="48" placeholder="Bez minima"></label>
+              <label data-for="laptops">Požadovaný hrubý rozdíl · Kč<input id="target-profit" type="number" min="0" max="10000000" value="0" required></label>
+              <label data-for="laptops">Ověřit cen nových modelů · 1–200<input id="price-lookup-limit" type="number" min="1" max="200" value="30" required></label>
             </div>
-            <div class="advanced-bottom"><label class="check-label"><input id="unknown-specs" type="checkbox"> Pustit i neznámé vybrané parametry</label><label class="check-label"><input id="lookup-prices" type="checkbox" checked> Dohledat ceny nových notebooků</label></div>
-            <fieldset class="retailer-select"><legend>Ceny nových kusů ověřovat na</legend><label class="check-label"><input type="checkbox" name="price-source" value="mironet" checked> Mironet</label><label class="check-label"><input type="checkbox" name="price-source" value="k24" checked> K24</label></fieldset>
-            <p class="scope-note">Hrubý rozdíl = cena nového × 0,75 − nákupní cena. Maximální nákup = cena nového × 0,75 − požadovaný rozdíl. Oprava, doprava a poplatky se neodečítají. Mironet a K24 porovnáváme podle výrobního označení nebo konfigurace. Cena je nejnižší z ověřených nabídek s nejsilnější shodou; nejde o kompletní přehled trhu.</p>
+            <div class="advanced-bottom"><label class="check-label"><input id="unknown-specs" type="checkbox"> Pustit i neznámé vybrané parametry</label><label class="check-label" data-for="laptops"><input id="lookup-prices" type="checkbox" checked> Dohledat ceny nových notebooků</label></div>
+            <fieldset class="retailer-select" data-for="laptops"><legend>Ceny nových kusů ověřovat na</legend><label class="check-label"><input type="checkbox" name="price-source" value="mironet" checked> Mironet</label><label class="check-label"><input type="checkbox" name="price-source" value="k24" checked> K24</label></fieldset>
+            <p class="scope-note" data-for="laptops">Hrubý rozdíl = cena nového × 0,75 − nákupní cena. Maximální nákup = cena nového × 0,75 − požadovaný rozdíl. Oprava, doprava a poplatky se neodečítají. Mironet a K24 porovnáváme podle výrobního označení nebo konfigurace. Cena je nejnižší z ověřených nabídek s nejsilnější shodou; nejde o kompletní přehled trhu.</p>
           </details>
           <details class="advanced"><summary>Další filtry a uložená hledání <span class="summary-hint">Výrazy, lokalita, aukce a popisy</span></summary><div class="advanced-grid">
             <label>Musí obsahovat všechny výrazy<input id="include" placeholder="Lenovo, RTX — odděluj čárkou"></label>

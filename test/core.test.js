@@ -57,24 +57,33 @@ test('Excluded phrases, required terms and location obey explicit filters', asyn
   assert.ok(evaluate(listing(),p,f)); assert.equal(evaluate(listing({description:'Politý, nejde zapnout'}),p,f),null); assert.equal(evaluate(listing({location:'Praha'}),p,f),null);
 });
 test('A hand-picked category rebuilds the search terms and keeps only that kind of goods', async () => {
-  for (const [category, cs] of [['phones','telefon'],['graphics','grafická karta'],['consoles','herní konzole']]) {
+  for (const [category, cs] of [['phones','telefon'],['gpu','grafická karta'],['desktops','počítač'],['psu','zdroj']]) {
     const plan = await createPlan(searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos'], category, useAI:false }), { env:{} });
     assert.equal(plan.category, category); assert.equal(plan.queryCs, cs); assert.equal(plan.damaged, true);
     assert.ok(!plan.termGroups.flat().includes('notebook'));
   }
-  const all = await createPlan(searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos'], category:'all', useAI:false }), { env:{} });
-  assert.ok(all.termGroups.flat().includes('notebook'));
+  // Searches saved before the rework keep working.
+  assert.equal(searchSchema.parse({ prompt:'x1', sources:['bazos'], category:'graphics' }).category, 'gpu');
+  assert.equal(searchSchema.parse({ prompt:'x1', sources:['bazos'], category:'auto' }).category, 'laptops');
   const f = searchSchema.parse({ prompt:'telefon', sources:['bazos'], category:'phones', condition:'any', maxPrice:null });
   const p = await createPlan(f, { env:{} });
   const phone = title => ({ id:'bazos:9', source:'bazos', category:'phones', title, description:'', price:1500, currency:'CZK', shipping:null, location:'Brno', condition:'', saleType:'classified' });
   assert.ok(evaluate(phone('Motorola Moto G54 128GB'), p, f));
   assert.equal(evaluate(phone('Kryt na iPhone 13 Pro'), p, f), null);
   assert.equal(evaluate(phone('KOUPÍM iPHONE A SAMSUNG – NA DÍLY'), p, f), null);
-  const c = await createPlan(searchSchema.parse({ prompt:'konzole', sources:['bazos'], category:'consoles', condition:'any' }), { env:{} });
-  assert.equal(evaluate({ ...phone('Ovladač PS5 DualSense bílý'), category:'consoles' }, c, f), null);
+  // Bazoš puts disks and HDDs together, cases and PSUs together: the listing has to name the kind.
+  const ssd = await createPlan(searchSchema.parse({ prompt:'ssd', sources:['bazos'], category:'ssd', condition:'any' }), { env:{} });
+  const part = (title, category) => ({ ...phone(title), category });
+  assert.ok(evaluate(part('Samsung 970 EVO Plus 1TB NVMe', 'ssd'), ssd, f));
+  assert.equal(evaluate(part('WD Blue 2TB 3,5"', 'ssd'), ssd, f), null);
+  const psu = await createPlan(searchSchema.parse({ prompt:'zdroj', sources:['bazos'], category:'psu', condition:'any' }), { env:{} });
+  assert.ok(evaluate(part('Zdroj Corsair RM750x', 'psu'), psu, f));
+  assert.equal(evaluate(part('Skříň Fractal Design Define 7', 'psu'), psu, f), null);
+  assert.equal(searchUrl('bazos', ssd), 'https://pc.bazos.cz/hdd/');
+  assert.ok(!searchUrl('ebay', ssd).includes('_nkw=ssd'), 'a component category needs no generic keyword');
 });
-test('Required terms naming a model pick the category and are searched for, not just filtered', async () => {
-  const f = searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos','aukro','ebay'], includeTerms:['Google pixel 10a'], condition:'any', maxPrice:null });
+test('Required terms are searched for, not just filtered', async () => {
+  const f = searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos','aukro','ebay'], category:'phones', includeTerms:['Google pixel 10a'], condition:'any', maxPrice:null });
   const plan = await createPlan(f, { env:{} });
   assert.equal(plan.category, 'phones'); assert.deepEqual(plan.keywords, ['Google pixel 10a']);
   assert.equal(searchUrl('bazos', plan, 2), 'https://mobil.bazos.cz/google/20/');
@@ -86,16 +95,16 @@ test('Required terms naming a model pick the category and are searched for, not 
   assert.equal(evaluate(phone('Tech-Protect FlexAir Hybrid MagSafe pouzdro na Google Pixel 10A'), plan, f), null);
   assert.deepEqual(damageEvidence({ title:'Google Pixel 10a', description:'Prodám nepoškozený/jako nový Pixel 10a', condition:'' }), []);
   // "Pixel 9" is one model name, so the model code G9S9B of a Pixel 6 does not count as a 9.
-  const nine = await createPlan(searchSchema.parse({ prompt:'Google Pixel 9', sources:['ebay'], maxPrice:null, minRamGb:16 }), { env:{} });
+  const f9 = searchSchema.parse({ prompt:'Google Pixel 9', sources:['ebay'], category:'phones', maxPrice:null, minVramGb:8, cpu:'i7' });
+  const nine = await createPlan(f9, { env:{} });
   assert.deepEqual(nine.keywords, ['google', 'pixel 9']);
-  const f9 = searchSchema.parse({ prompt:'Google Pixel 9', sources:['ebay'], maxPrice:null, minRamGb:16 });
-  assert.ok(evaluate(phone('Google Pixel 9a 128GB Iris'), nine, f9), 'notebook RAM filter must not apply to phones');
+  assert.ok(evaluate(phone('Google Pixel 9a 128GB Iris'), nine, f9), 'notebook and PC filters must not apply to phones');
   assert.equal(evaluate(phone('Google Pixel 6 G9S9B 128 GB Black'), nine, f9), null);
   assert.match(rejectionReason(phone('Google Pixel 9 Pro'), nine, { ...f9, maxPrice:6000 }), /^Dražší než limit 6\s000 Kč$/);
   assert.equal(rejectionReason(phone('Google Pixel 9 Pro'), plan, f), 'Chybí povinný výraz „Google pixel 10a“');
-  // Gaming words stay inside the notebook search; brand-less browsing is unchanged.
-  const rtx = await createPlan(searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos'], includeTerms:['RTX'] }), { env:{} });
-  assert.equal(rtx.category, 'laptops');
+  // A notebook prompt may name its GPU; brand-less browsing is unchanged.
+  const rtx = await createPlan(searchSchema.parse({ prompt:'Rozbitý notebook Legion RTX 3060', sources:['bazos'], category:'laptops' }), { env:{} });
+  assert.deepEqual(rtx.keywords, ['legion', 'rtx 3060']);
   assert.equal(searchUrl('bazos', await createPlan(searchSchema.parse({ prompt:'telefon', sources:['bazos'], category:'phones' }), { env:{} })), 'https://mobil.bazos.cz/');
 });
 
@@ -153,9 +162,31 @@ test('External and executable listing links are rejected', () => {
   assert.equal(safeUrl('','https://aukro.cz',['aukro.cz']),null);
   assert.equal(safeUrl('javascript:alert(1)','https://aukro.cz',['aukro.cz']),null); assert.equal(safeUrl('https://evil.test/','https://aukro.cz',['aukro.cz']),null); assert.equal(safeUrl('https://aukro.cz@evil.test/','https://aukro.cz',['aukro.cz']),null);
 });
-test('Console generation number is retained in the plan', () => {
-  const plan = rulePlan('Nefunkční PlayStation 5');
-  assert.ok(plan.termGroups.some(group => group.includes('playstation 5')));
+test('Phones read brand, RAM and storage; notebooks read VRAM; each category filters only its own parameters', async () => {
+  const { extractPhone, extractHardware, hardwareMatches } = await import('../src/hardware.js');
+  const phone = (title, description = '') => extractPhone({ title, description });
+  assert.deepEqual({ ...phone('Samsung Galaxy S23 8/256GB') }, { kind:'phone', brand:'SAMSUNG', ramGb:8, storageGb:256 });
+  assert.deepEqual({ ...phone('iPhone 13 128GB, stav 10/10') }, { kind:'phone', brand:'APPLE', ramGb:null, storageGb:128 });
+  assert.deepEqual({ ...phone('Redmi Note 13 Pro', 'RAM: 12 GB, úložiště 512 GB') }, { kind:'phone', brand:'XIAOMI', ramGb:12, storageGb:512 });
+  assert.equal(phone('Google Pixel 9 - 12/256 porcelain').ramGb, 12);
+  assert.equal(extractHardware({ title:'Lenovo Legion 5, RTX 3060, 16GB RAM', description:'' }).vramGb, 6);
+  assert.equal(extractHardware({ title:'Asus TUF RTX 4060 8GB, 16GB RAM, 1TB SSD', description:'' }).vramGb, 8);
+  assert.equal(extractHardware({ title:'HP ProBook 450 G8 i5 Iris Xe', description:'' }).vramGb, 0);
+  assert.equal(extractHardware({ title:'Dell G15 RTX 3050', description:'' }).vramGb, null);
+  const laptop = extractHardware({ title:'Lenovo Legion 5 RTX 3060 16GB RAM 512GB SSD', description:'' });
+  const f = searchSchema.parse({ prompt:'notebook', sources:['bazos'], brand:'LENOVO', minRamGb:16, minStorageGb:512, minVramGb:6, cpu:'ryzen 9' });
+  assert.ok(hardwareMatches(laptop, f, 'laptops'), 'CPU is not a notebook filter');
+  assert.equal(hardwareMatches(laptop, { ...f, minVramGb:8 }, 'laptops'), false);
+  assert.equal(hardwareMatches(laptop, { ...f, brand:'HP' }, 'laptops'), false);
+  assert.equal(hardwareMatches(laptop, f, 'desktops'), false, 'CPU is a PC filter');
+  assert.ok(hardwareMatches(null, f, 'gpu'));
+  const google = await createPlan(searchSchema.parse({ prompt:'telefon', sources:['bazos'], category:'phones', brand:'GOOGLE' }), { env:{} });
+  assert.equal(searchUrl('bazos', google), 'https://mobil.bazos.cz/google/');
+  assert.equal(searchUrl('aukro', google), 'https://aukro.cz/mobilni-telefony?text=google');
+});
+test('Model number is retained in the plan', () => {
+  const plan = rulePlan('Nefunkční Galaxy 5', 'phones');
+  assert.ok(plan.termGroups.some(group => group.includes('galaxy 5')));
   assert.ok(plan.queryEn.includes('5'));
 });
 test('Bazos uses category pagination, not disallowed search parameters', () => {

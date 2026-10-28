@@ -28,7 +28,7 @@ export function searchUrl(source, plan, page = 1) {
     return url.href;
   }
   const url = new URL('https://www.ebay.com/sch/i.html');
-  url.searchParams.set('_nkw', keywordQuery(plan, plan.queryEn));
+  url.searchParams.set('_nkw', keywordQuery(plan, category.group ? '' : plan.queryEn));
   if (category.ebay) url.searchParams.set('_sacat', category.ebay);
   if (plan.damaged) url.searchParams.set('LH_ItemCondition', '7000');
   return url.href;
@@ -82,7 +82,9 @@ export async function collectSource(source, plan, filters, progress, signal, dep
         if (!stream) break;
         const url = new URL('https://api.ebay.com/buy/browse/v1/item_summary/search');
         url.searchParams.set('fieldgroups', 'EXTENDED');
-        if (!stream.broad) url.searchParams.set('q', keywordQuery(plan, plan.queryEn));
+        // A component category is precise on its own; a generic word like "processor" would only hide listings.
+        const q = keywordQuery(plan, categories[plan.category].group ? '' : plan.queryEn);
+        if (!stream.broad && q) url.searchParams.set('q', q);
         url.searchParams.set('limit', '50'); url.searchParams.set('offset', String(stream.offset));
         if (categories[plan.category].ebay) url.searchParams.set('category_ids', categories[plan.category].ebay);
         const queryFilters = [filters.includeAuctions ? 'buyingOptions:{FIXED_PRICE|AUCTION}' : 'buyingOptions:{FIXED_PRICE}'];

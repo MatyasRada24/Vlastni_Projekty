@@ -41,12 +41,40 @@ async function api(url, options = {}) {
 const terms = id => $(id).value.split(',').map(x => x.trim()).filter(Boolean);
 const price = id => $(id).value.trim() === '' ? null : Number($(id).value);
 function filters() {
-  return { prompt: $('#prompt').value.trim(), sources: [...document.querySelectorAll('[name=source]:checked')].map(x => x.value), category: $('#category').value, condition: $('#condition').value, minPrice: price('#min-price'), maxPrice: price('#max-price'), includeTerms: terms('#include'), excludeTerms: terms('#exclude'), location: $('#location').value.trim(), region: $('#region').value, pages: Number($('#pages').value), detailLimit: Number($('#detail-limit').value), includeAuctions: $('#auctions').checked, includeUnknownPrice: $('#unknown-price').checked, useAI: $('#use-ai').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value), model:$('#model').value.trim(), cpu:$('#cpu').value.trim(), gpu:$('#gpu').value.trim(), minRamGb:price('#min-ram'), minStorageGb:price('#min-storage'), includeUnknownSpecs:$('#unknown-specs').checked, lookupNewPrices:$('#lookup-prices').checked, priceLookupLimit:Number($('#price-lookup-limit').value), targetProfit:Number($('#target-profit').value), priceSources:[...document.querySelectorAll('[name=price-source]:checked')].map(x => x.value) };
+  return { prompt: $('#prompt').value.trim(), sources: [...document.querySelectorAll('[name=source]:checked')].map(x => x.value), category: searchCategory(), condition: $('#condition').value, minPrice: price('#min-price'), maxPrice: price('#max-price'), includeTerms: terms('#include'), excludeTerms: terms('#exclude'), location: $('#location').value.trim(), region: $('#region').value, pages: Number($('#pages').value), detailLimit: Number($('#detail-limit').value), includeAuctions: $('#auctions').checked, includeUnknownPrice: $('#unknown-price').checked, useAI: $('#use-ai').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value), brand:$('#brand').value, cpu:$('#cpu').value.trim(), gpu:$('#gpu').value.trim(), minRamGb:price('#min-ram'), minStorageGb:price('#min-storage'), minVramGb:price('#min-vram'), includeUnknownSpecs:$('#unknown-specs').checked, lookupNewPrices:$('#lookup-prices').checked, priceLookupLimit:Number($('#price-lookup-limit').value), targetProfit:Number($('#target-profit').value), priceSources:[...document.querySelectorAll('[name=price-source]:checked')].map(x => x.value) };
+}
+// Components are one choice in the form; the server searches each kind as its own category.
+const componentKinds = ['ram','cpu','gpu','ssd','psu','mb'];
+const brandOptions = {
+  laptops: [['LENOVO','Lenovo'],['HP','HP'],['DELL','Dell'],['ASUS','Asus'],['ACER','Acer'],['MSI','MSI'],['APPLE','Apple'],['GIGABYTE','Gigabyte'],['RAZER','Razer'],['SAMSUNG','Samsung'],['HUAWEI','Huawei'],['MICROSOFT','Microsoft'],['FUJITSU','Fujitsu'],['TOSHIBA','Toshiba'],['MEDION','Medion'],['XIAOMI','Xiaomi']],
+  phones: [['APPLE','Apple'],['SAMSUNG','Samsung'],['XIAOMI','Xiaomi'],['GOOGLE','Google'],['HUAWEI','Huawei'],['HONOR','Honor'],['MOTOROLA','Motorola'],['NOKIA','Nokia'],['ONEPLUS','OnePlus'],['OPPO','Oppo'],['REALME','Realme'],['VIVO','Vivo'],['SONY','Sony'],['NOTHING','Nothing'],['FAIRPHONE','Fairphone']],
+};
+const parameterTexts = {
+  laptops: ['Parametry notebooku a ocenění', 'Výrobce, RAM, SSD, VRAM a cenové zdroje'],
+  desktops: ['Parametry počítače', 'RAM, procesor, grafika a SSD'],
+  phones: ['Parametry telefonu', 'Výrobce, RAM a úložiště'],
+};
+const searchCategory = () => $('#category').value === 'components' ? $('#component').value : $('#category').value;
+function applyCategory(brand = $('#brand').value) {
+  const category = $('#category').value;
+  document.querySelectorAll('[data-for]').forEach(el => { el.hidden = !el.dataset.for.split(' ').includes(category); });
+  // Components are filtered by kind and price only, so their parameter section disappears.
+  $('#parameters').hidden = category === 'components';
+  const [title, hint] = parameterTexts[category] ?? parameterTexts.laptops;
+  $('#parameters-title').textContent = title; $('#parameters-hint').textContent = hint;
+  $('#storage-label').textContent = category === 'phones' ? 'Úložiště alespoň · GB' : 'SSD alespoň · GB';
+  $('#brand').innerHTML = `<option value="">Všichni výrobci</option>${(brandOptions[category] ?? []).map(([value,label]) => `<option value="${value}">${label}</option>`).join('')}`;
+  $('#brand').value = (brandOptions[category] ?? []).some(([value]) => value === brand) ? brand : '';
 }
 function restoreFilters(data) {
-  const fields = { prompt:'prompt', category:'category', condition:'condition', minPrice:'min-price', maxPrice:'max-price', location:'location', region:'region', pages:'pages', detailLimit:'detail-limit', usdRate:'usd-rate', eurRate:'eur-rate', gbpRate:'gbp-rate' };
+  const fields = { prompt:'prompt', condition:'condition', minPrice:'min-price', maxPrice:'max-price', location:'location', region:'region', pages:'pages', detailLimit:'detail-limit', usdRate:'usd-rate', eurRate:'eur-rate', gbpRate:'gbp-rate' };
+  // Searches saved before the category rework used auto, all, graphics or consoles.
+  const category = data.category === 'graphics' ? 'gpu' : data.category;
+  if (componentKinds.includes(category)) { $('#category').value = 'components'; $('#component').value = category; }
+  else $('#category').value = ['laptops','desktops','phones'].includes(category) ? category : 'laptops';
+  applyCategory(data.brand ?? '');
   $('#detail-limit').value = data.detailLimit ?? 60;
-  for (const [key,id,fallback] of [['model','model',''],['cpu','cpu',''],['gpu','gpu',''],['minRamGb','min-ram',''],['minStorageGb','min-storage',''],['targetProfit','target-profit',0],['priceLookupLimit','price-lookup-limit',30]]) $(`#${id}`).value = data[key] ?? fallback;
+  for (const [key,id,fallback] of [['cpu','cpu',''],['gpu','gpu',''],['minRamGb','min-ram',''],['minStorageGb','min-storage',''],['minVramGb','min-vram',''],['targetProfit','target-profit',0],['priceLookupLimit','price-lookup-limit',30]]) $(`#${id}`).value = data[key] ?? fallback;
   $('#unknown-specs').checked = data.includeUnknownSpecs ?? false;
   $('#lookup-prices').checked = data.lookupNewPrices ?? true;
   document.querySelectorAll('[name=price-source]').forEach(input => {input.checked = (data.priceSources ?? ['mironet','k24']).includes(input.value);});
@@ -107,8 +135,11 @@ function issuesHtml(item) {
 
 function hardwareHtml(item) {
   if (!item.specs) return '';
-  const specs = item.specs;
-  return `<dl class="specs">${[['Model',specs.model || specs.sku],['CPU',specs.cpu],['GPU',specs.gpu],['RAM',specs.ramGb == null ? null : `${specs.ramGb} GB`],['Disk',specs.storageGb == null ? null : `${specs.storageGb} GB ${specs.storageType ?? ''}`]].map(([label,value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value ?? 'Neznámé')}</dd></div>`).join('')}</dl>${specs.ambiguous?.length ? '<p class="price-note">Některé údaje v popisu si odporují nebo uvádějí více variant; zůstávají neznámé.</p>' : ''}`;
+  const specs = item.specs, gb = value => value == null ? null : `${value} GB`;
+  const rows = specs.kind === 'phone' ? [['Výrobce',specs.brand],['RAM',gb(specs.ramGb)],['Úložiště',gb(specs.storageGb)]]
+    : item.category === 'desktops' ? [['CPU',specs.cpu],['GPU',specs.gpu],['RAM',gb(specs.ramGb)],['Disk',specs.storageGb == null ? null : `${specs.storageGb} GB ${specs.storageType ?? ''}`]]
+    : [['Model',specs.model || specs.sku],['CPU',specs.cpu],['GPU',specs.gpu],['VRAM',gb(specs.vramGb)],['RAM',gb(specs.ramGb)],['Disk',specs.storageGb == null ? null : `${specs.storageGb} GB ${specs.storageType ?? ''}`]];
+  return `<dl class="specs">${rows.map(([label,value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value ?? 'Neznámé')}</dd></div>`).join('')}</dl>${specs.ambiguous?.length ? '<p class="price-note">Některé údaje v popisu si odporují nebo uvádějí více variant; zůstávají neznámé.</p>' : ''}`;
 }
 
 function manualFormHtml(item) {
@@ -262,6 +293,7 @@ $('#search-form').addEventListener('submit', async event => {
 });
 $('#cancel-button').addEventListener('click', async () => { if (!job) return; try { await api(`/api/search/${job.id}/cancel`, { method:'POST', body:'{}' }); toast('Zastavuji vyhledávání…'); } catch(e) { showError(e.message); } });
 $('#source-tabs').addEventListener('click', event => { const tab = event.target.closest('[data-source]'); if (!tab) return; currentSource = tab.dataset.source; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === tab)); renderItems(); });
+$('#category').addEventListener('change', () => applyCategory());
 $('#sort').addEventListener('change', renderItems);
 $('#defect-filter').addEventListener('change', renderItems);
 $('#show-hidden').addEventListener('change', renderItems);
@@ -395,7 +427,7 @@ $('#export').addEventListener('click', () => {
 
 try {
   config = await api('/api/config');
-  $('#category').insertAdjacentHTML('beforeend', config.categories.map(c => `<option value="${c.id}">${escapeHtml(c.label)}</option>`).join(''));
+  applyCategory();
   $('#ai-label').textContent = config.aiConfigured ? 'Použít AI plán' : 'AI plán · klíč nenastaven';
   $('#ebay-hint').textContent = config.ebayConfigured ? '' : 'vyžaduje klíč';
   $('#connection-status').innerHTML = `Bazoš a Aukro: veřejné stránky<br>AI plánování: <strong>${config.aiConfigured ? 'klíč nastaven (platnost se ověří při hledání)' : 'nenastaveno · fungují lokální pravidla'}</strong><br>eBay: <strong>${config.ebayConfigured ? 'klíče nastaveny (přístup se ověří při hledání)' : 'chybí API klíče'}</strong>`;
