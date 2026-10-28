@@ -249,8 +249,11 @@ export async function enrichValuations(job, signal, dependencies = {}) {
         job.phase = `Ověřuji cenu nového notebooku · ${job.valuationProgress.lookups}/${limit}`;
         value = await lookup(item.specs,signal,{priceSources:job.filters.priceSources,blockedSources});
         if (value.blocked) blocked = value;
-        // Only definite answers are reused by later searches; failures are retried next time.
-        if (['matched','not_found'].includes(value.status)) await dependencies.priceCache?.setPrice(priceKey(item.specs, job.filters), value);
+        // Only definite answers are reused by later searches: a found price, or every reachable shop
+        // answering "not found" (a shop that blocks bots, like Mironet, would otherwise prevent caching forever).
+        // Network failures are retried next time.
+        const definite = value.status === 'matched' || (value.reports?.length && value.reports.every(r => r.status === 'not_found' || r.blocked) && value.reports.some(r => r.status === 'not_found'));
+        if (definite) await dependencies.priceCache?.setPrice(priceKey(item.specs, job.filters), value);
       }
       cache.set(key,value);
     }

@@ -33,6 +33,16 @@ test('Verified new prices are reused for 12 hours, so a repeated search skips th
   assert.equal(second.items[0].valuation.cached, true);
   assert.equal(second.items[0].valuation.calculation.grossProfit, 11000);
   assert.equal(await store.getPrice('x', Date.now()), null);
+  // "Not found" at reachable shops is cached even when another shop blocks bots; a plain failure is not.
+  let notFound = 0;
+  const other = { ...specs, model:'LOQ 15APH8' };
+  const missing = async () => { notFound++; return { status:'unavailable', offers:[], reports:[{ status:'unavailable', blocked:true },{ status:'not_found' }] }; };
+  const failing = async () => { notFound++; return { status:'unavailable', offers:[], reports:[{ status:'unavailable', blocked:false }] }; };
+  for (const lookup of [missing, missing]) await enrichValuations({ filters:{ priceLookupLimit:5 }, items:[{ priceCzk:1, specs:other }] }, new AbortController().signal, { lookupNewPrice:lookup, priceCache:store });
+  assert.equal(notFound, 1);
+  const third = { ...specs, model:'LOQ 16IRH8' };
+  for (const lookup of [failing, failing]) await enrichValuations({ filters:{ priceLookupLimit:5 }, items:[{ priceCzk:1, specs:third }] }, new AbortController().signal, { lookupNewPrice:lookup, priceCache:store });
+  assert.equal(notFound, 3);
   await store.setPrice('old', { status:'matched' }, Date.now() - 13 * 3600000);
   assert.equal(await store.getPrice('old'), null);
 });
