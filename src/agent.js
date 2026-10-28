@@ -1,6 +1,6 @@
 import { createPlan } from './planner.js';
 import { collectSource } from './sources.js';
-import { evaluate } from './matching.js';
+import { evaluate, rejectionReason } from './matching.js';
 import { enrichValuations } from './valuation.js';
 import { store } from './store.js';
 
@@ -34,6 +34,11 @@ export async function runAgent(job, dependencies = {}) {
     const unique = new Map(sourceResults.flatMap(x => x.items).map(item => [item.id, item]));
     job.items = [...unique.values()].map(item => evaluate(item, job.plan, job.filters)).filter(Boolean).sort((a,b) => b.score - a.score || (a.priceCzk ?? Infinity) - (b.priceCzk ?? Infinity));
     job.scanned = unique.size;
+    if (!job.items.length) {
+      const counts = {};
+      for (const item of unique.values()) { const reason = rejectionReason(item, job.plan, job.filters); if (reason) counts[reason] = (counts[reason] ?? 0) + 1; }
+      job.rejections = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([reason, count]) => ({ reason, count }));
+    }
     if (!signal.aborted && job.filters.lookupNewPrices && job.plan.category === 'laptops') await enrichValuations(job,signal,{...dependencies,marketListings:[...unique.values()],priceCache:dependencies.store === null ? null : (dependencies.store ?? store)});
     if (dependencies.store !== null) await (dependencies.store ?? store).annotate(job.items).catch(() => {});
     job.status = signal.aborted ? 'cancelled' : 'done';

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { searchSchema, parsePrice, safeUrl } from '../src/schema.js';
 import { rulePlan, createPlan } from '../src/planner.js';
-import { damageEvidence, evaluate } from '../src/matching.js';
+import { damageEvidence, evaluate, rejectionReason } from '../src/matching.js';
 import { parseBazos, parseAukro, parseEbay, extractDescription } from '../src/parsers.js';
 import { collectSource, searchUrl } from '../src/sources.js';
 import { runAgent } from '../src/agent.js';
@@ -85,6 +85,14 @@ test('Required terms naming a model pick the category and are searched for, not 
   assert.equal(evaluate(phone('Průhledné pouzdro 3mk Clear pro Google Pixel 10A'), plan, f), null);
   assert.equal(evaluate(phone('Tech-Protect FlexAir Hybrid MagSafe pouzdro na Google Pixel 10A'), plan, f), null);
   assert.deepEqual(damageEvidence({ title:'Google Pixel 10a', description:'Prodám nepoškozený/jako nový Pixel 10a', condition:'' }), []);
+  // "Pixel 9" is one model name, so the model code G9S9B of a Pixel 6 does not count as a 9.
+  const nine = await createPlan(searchSchema.parse({ prompt:'Google Pixel 9', sources:['ebay'], maxPrice:null, minRamGb:16 }), { env:{} });
+  assert.deepEqual(nine.keywords, ['google', 'pixel 9']);
+  const f9 = searchSchema.parse({ prompt:'Google Pixel 9', sources:['ebay'], maxPrice:null, minRamGb:16 });
+  assert.ok(evaluate(phone('Google Pixel 9a 128GB Iris'), nine, f9), 'notebook RAM filter must not apply to phones');
+  assert.equal(evaluate(phone('Google Pixel 6 G9S9B 128 GB Black'), nine, f9), null);
+  assert.match(rejectionReason(phone('Google Pixel 9 Pro'), nine, { ...f9, maxPrice:6000 }), /^Dražší než limit 6\s000 Kč$/);
+  assert.equal(rejectionReason(phone('Google Pixel 9 Pro'), plan, f), 'Chybí povinný výraz „Google pixel 10a“');
   // Gaming words stay inside the notebook search; brand-less browsing is unchanged.
   const rtx = await createPlan(searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos'], includeTerms:['RTX'] }), { env:{} });
   assert.equal(rtx.category, 'laptops');
@@ -147,7 +155,7 @@ test('External and executable listing links are rejected', () => {
 });
 test('Console generation number is retained in the plan', () => {
   const plan = rulePlan('Nefunkční PlayStation 5');
-  assert.ok(plan.termGroups.some(group => group.includes('5')));
+  assert.ok(plan.termGroups.some(group => group.includes('playstation 5')));
   assert.ok(plan.queryEn.includes('5'));
 });
 test('Bazos uses category pagination, not disallowed search parameters', () => {

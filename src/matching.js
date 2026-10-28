@@ -91,10 +91,33 @@ function passesFilters(item, filters) {
   return true;
 }
 
+// Why a listing did not make it, in the order evaluate() checks. Shown when a search ends empty,
+// because filters remembered from an earlier search (a required term, a price cap) are easy to miss.
+export function rejectionReason(item, plan, filters) {
+  const text = `${item.title} ${item.description} ${item.condition}`;
+  if (wantedAd.test(normalize(item.title))) return 'Poptávka „koupím“';
+  const missingInclude = filters.includeTerms.find(term => !hasTerm(text, term));
+  if (missingInclude) return `Chybí povinný výraz „${missingInclude}“`;
+  if (plan.excludeTerms.some(term => hasTerm(text, term))) return 'Obsahuje vyloučený výraz';
+  if (isAccessory(item, plan)) return 'Příslušenství nebo náhradní díl';
+  if (!productMatches(item, plan, filters)) return 'Neodpovídá hledanému zboží nebo modelu';
+  if (plan.category === 'laptops' && !hardwareMatches(extractHardware(item), filters)) return 'Nesplňuje parametry notebooku';
+  if (plan.damaged && !damageEvidence(item).length) return 'Bez zmínky o závadě (hledáš kusy na opravu)';
+  if (!filters.includeAuctions && (item.saleType === 'auction' || item.saleType === 'unknown')) return 'Aukce (vypnuté v nastavení)';
+  if ((filters.location && !normalize(item.location).includes(normalize(filters.location))) || (filters.region && regionOf(item.location) !== filters.region)) return 'Mimo zvolenou lokalitu';
+  const rate = { CZK: 1, USD: filters.usdRate, EUR: filters.eurRate, GBP: filters.gbpRate }[item.currency];
+  const priceCzk = item.price !== null && rate ? Math.round(item.price * rate) : null;
+  if (priceCzk === null) return 'Neznámá cena';
+  if (filters.maxPrice !== null && priceCzk > filters.maxPrice) return `Dražší než limit ${filters.maxPrice.toLocaleString('cs-CZ')} Kč`;
+  if (filters.minPrice !== null && priceCzk < filters.minPrice) return `Levnější než ${filters.minPrice.toLocaleString('cs-CZ')} Kč`;
+  return null;
+}
+
 export function evaluate(item, plan, filters) {
   if (!productMatches(item, plan, filters)) return null;
   const specs = extractHardware(item);
-  if (!hardwareMatches(specs, filters)) return null;
+  // Model, CPU, GPU, RAM and storage fields describe notebooks; remembered values must not empty a phone search.
+  if (plan.category === 'laptops' && !hardwareMatches(specs, filters)) return null;
   const evidence = damageEvidence(item);
   if (plan.damaged && !evidence.length) return null;
   if (!filters.includeAuctions && (item.saleType === 'auction' || item.saleType === 'unknown')) return null;

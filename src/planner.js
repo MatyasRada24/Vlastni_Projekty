@@ -20,7 +20,14 @@ export function rulePlan(prompt, forcedCategory = null) {
   const withoutBudget = text.replace(/\b(?:do|od|max)\s+[\d\s.,]+\s*(?:kc|czk|korun)?/g, '');
   // With a category chosen by hand, product words of other categories ("Legion", "RTX") cannot be required.
   const foreign = forcedCategory ? new Set(Object.entries(productGroups).filter(([id]) => id !== category).flatMap(([, terms]) => terms).concat(gaming).map(normalize)) : new Set();
-  const remaining = residual.filter(w => withoutBudget.split(/[^a-z0-9]+/).includes(w) && !foreign.has(w));
+  const remaining = residual.filter(w => withoutBudget.split(/[^a-z0-9]+/).includes(w) && !foreign.has(w))
+    // "Pixel 9" or "RTX 3060" is one model name: a lone "9" would also match the code "G9S9B" of a Pixel 6.
+    .reduce((list, word) => {
+      const previous = list.at(-1);
+      if (previous && /^\d/.test(word) && !/\d/.test(previous) && Object.values(productGroups).some(group => group.includes(previous))) list[list.length - 1] = `${previous} ${word}`;
+      else list.push(word);
+      return list;
+    }, []);
   for (const word of remaining.slice(0, 8)) termGroups.push([word]);
   const cs = { laptops: 'notebook', graphics: 'grafická karta', consoles: 'herní konzole', phones: 'telefon', all: prompt }[category];
   const en = { laptops: 'laptop', graphics: 'graphics card', consoles: 'game console', phones: 'phone', all: prompt }[category];

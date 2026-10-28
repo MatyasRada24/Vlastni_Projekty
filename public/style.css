@@ -283,6 +283,11 @@ h1 span{color:var(--muted);font-weight:500}
 .empty .eyebrow{justify-content:center;margin:0 0 8px}
 .empty h3{font-family:var(--display);font-size:28px;line-height:1.15;letter-spacing:-.03em;font-weight:600;margin:0 0 10px;text-wrap:balance}
 .empty p{font-size:15px;color:var(--muted);line-height:1.6;margin:0 auto;max-width:52ch;text-wrap:balance}
+.rejections{list-style:none;margin:22px auto 0;padding:14px 18px;max-width:440px;text-align:left;border-radius:14px;background:var(--surface-2);font-size:14px}
+.rejections li{display:flex;justify-content:space-between;gap:16px;padding:5px 0}
+.rejections li+li{border-top:1px solid var(--line)}
+.rejections .rejections-title{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.rejections b{font-family:var(--mono, monospace);font-weight:600;white-space:nowrap}
 .empty-symbol{display:inline-flex;width:48px;height:48px;border-radius:14px;background:var(--surface-2);font-size:26px;color:var(--muted);align-items:center;justify-content:center;margin-bottom:12px}
 .example-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:24px}
 .example-chips button{font-size:14px;font-weight:500;padding:8px 14px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);color:var(--ink-2)}

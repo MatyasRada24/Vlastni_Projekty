@@ -165,7 +165,8 @@ function renderItems() {
     if (!job && !savedView) { $('#results').innerHTML = initialEmptyState; return; }
     const title = savedView ? 'Zatím tu není žádná uložená nabídka.' : job?.status === 'running' ? 'Agent právě prochází nabídky.' : 'V prohlédnutém vzorku není shoda.';
     const description = savedView ? 'U nabídky klikni na „Uložit“. Oblíbené zůstanou v tomto prohlížeči.' : job?.status === 'running' ? 'Nalezené nabídky se zobrazují průběžně. Procházení můžeš kdykoliv zastavit.' : 'Zkontroluj stav zdrojů a vyhledávací plán. Zkus více stránek, obecnější zadání nebo volnější filtry.';
-    $('#results').innerHTML = `<div class="empty"><span class="empty-symbol">⌕</span><h3>${title}</h3><p>${description}</p></div>`;
+    const reasons = !savedView && job?.rejections?.length ? `<ul class="rejections"><li class="rejections-title">Nejčastější důvody vyřazení</li>${job.rejections.map(r => `<li><span>${escapeHtml(r.reason)}</span><b>${r.count}×</b></li>`).join('')}</ul>` : '';
+    $('#results').innerHTML = `<div class="empty"><span class="empty-symbol">⌕</span><h3>${title}</h3><p>${description}</p>${reasons}</div>`;
     return;
   }
   const shown = items.slice(0,displayedLimit);
