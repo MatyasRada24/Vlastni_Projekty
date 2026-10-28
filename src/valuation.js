@@ -224,6 +224,8 @@ export function marketIndex(listings, minCount = 3) {
   };
 }
 
+const priceKey = (specs, filters) => JSON.stringify([specs.brand, specs.model, specs.cpu, specs.gpu, specs.sku, specs.ramGb, specs.storageGb, specs.storageType, [...(filters.priceSources ?? ['mironet','k24'])].sort()]);
+
 export async function enrichValuations(job, signal, dependencies = {}) {
   const market = marketIndex(dependencies.marketListings ?? []);
   const lookup = dependencies.lookupNewPrice ?? lookupNewPrice;
@@ -239,6 +241,7 @@ export async function enrichValuations(job, signal, dependencies = {}) {
     let value = cache.get(key);
     if (!value) {
       if (!hasPriceIdentity(item.specs)) value = {...insufficient(item.specs),searchLinks:(job.filters.priceSources ?? ['mironet','k24']).map(id => ({source:id,name:priceRetailers[id].name,url:newPriceSearchUrl(item.specs,id)}))};
+      else if ((value = await dependencies.priceCache?.getPrice(priceKey(item.specs, job.filters)))) value = {...value, cached:true};
       else if (blocked) value = {...blocked,searchUrl:newPriceSearchUrl(item.specs)};
       else if (job.valuationProgress.lookups >= limit) value = {status:'limit',message:'Dosažen nastavený limit dohledávání cen.',searchUrl:newPriceSearchUrl(item.specs)};
       else {
@@ -246,6 +249,8 @@ export async function enrichValuations(job, signal, dependencies = {}) {
         job.phase = `Ověřuji cenu nového notebooku · ${job.valuationProgress.lookups}/${limit}`;
         value = await lookup(item.specs,signal,{priceSources:job.filters.priceSources,blockedSources});
         if (value.blocked) blocked = value;
+        // Only definite answers are reused by later searches; failures are retried next time.
+        if (['matched','not_found'].includes(value.status)) await dependencies.priceCache?.setPrice(priceKey(item.specs, job.filters), value);
       }
       cache.set(key,value);
     }

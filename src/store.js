@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const maxListings = 20000;
+const maxPrices = 2000;
+const priceTtl = 12 * 3600000;
 
 // Local JSON memory between runs: when a listing was first seen, its price history and hidden listings.
 // Stored in data/ (git-ignored). Only listing ids, titles, URLs and prices; no seller contacts.
@@ -55,6 +57,20 @@ export function createStore(dir = fileURLToPath(new URL('../data/', import.meta.
       if (hidden) s.hidden[id] = { title:String(title).slice(0,200), at:new Date().toISOString() }; else delete s.hidden[id];
       await save();
       return s.hidden;
+    },
+    // New-price results for 12 hours, so repeated searches and watch runs skip already checked configurations.
+    async getPrice(key, now = Date.now()) {
+      const entry = (await load()).prices?.[key];
+      return entry && now - entry.at < priceTtl ? entry.value : null;
+    },
+    async setPrice(key, value, now = Date.now()) {
+      const s = await load();
+      s.prices ??= {};
+      s.prices[key] = { at: now, value };
+      const keys = Object.keys(s.prices);
+      for (const k of keys) if (now - s.prices[k].at >= priceTtl) delete s.prices[k];
+      if (Object.keys(s.prices).length > maxPrices) Object.keys(s.prices).sort((a,b) => s.prices[a].at - s.prices[b].at).slice(0, Object.keys(s.prices).length - maxPrices).forEach(k => delete s.prices[k]);
+      await save();
     },
     async watch() { return (await load()).watch; },
     async setWatch(value) { (await load()).watch = value; await save(); return value; },

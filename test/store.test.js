@@ -19,3 +19,20 @@ test('Remembers listings between runs: new, price drops and hidden listings pers
   await second.setHidden('bazos:2', false);
   assert.deepEqual(JSON.parse(await readFile(join(dir, 'store.json'), 'utf8')).hidden, {});
 });
+
+test('Verified new prices are reused for 12 hours, so a repeated search skips the network lookup', async () => {
+  const { enrichValuations } = await import('../src/valuation.js');
+  const store = createStore(await mkdtemp(join(tmpdir(), 'lovec-price-')));
+  const specs = { brand:'LENOVO', model:'LOQ 15IRH8', cpu:'I5-12450H', gpu:'RTX 4050', sku:null, ramGb:16, storageGb:512, storageType:'SSD' };
+  let calls = 0;
+  const lookupNewPrice = async () => { calls++; return { status:'matched', reference:{ priceCzk:20000, match:'configuration' }, offers:[], reports:[] }; };
+  const run = () => { const job = { filters:{ priceLookupLimit:5, targetProfit:0 }, items:[{ priceCzk:4000, specs }] }; return enrichValuations(job, new AbortController().signal, { lookupNewPrice, priceCache:store }).then(() => job); };
+  await run();
+  const second = await run();
+  assert.equal(calls, 1);
+  assert.equal(second.items[0].valuation.cached, true);
+  assert.equal(second.items[0].valuation.calculation.grossProfit, 11000);
+  assert.equal(await store.getPrice('x', Date.now()), null);
+  await store.setPrice('old', { status:'matched' }, Date.now() - 13 * 3600000);
+  assert.equal(await store.getPrice('old'), null);
+});
