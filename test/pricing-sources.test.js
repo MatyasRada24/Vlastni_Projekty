@@ -86,6 +86,21 @@ test('MacBooks: the chip stands in for the GPU and Apple Store prices the same s
   assert.equal(older.status, 'not_found');
 });
 
+test('Cached recognition returns independent copies and shop links with a different configuration are skipped', async ()=>{
+  const { extractHardware } = await import('../src/hardware.js');
+  const { classifyListing } = await import('../src/defects.js');
+  const { rankLinks } = await import('../src/valuation.js');
+  const first = extractHardware({ title:'Lenovo LOQ 15IRH8 i5-12450H RTX 4050 16GB 512GB SSD' });
+  first.sku = 'CHANGED'; first.ambiguous.push('x');
+  const second = extractHardware({ title:'Lenovo LOQ 15IRH8 i5-12450H RTX 4050 16GB 512GB SSD' });
+  assert.equal(second.sku, null); assert.deepEqual(second.ambiguous, []);
+  const c1 = classifyListing({ title:'Nezapne se', description:'', condition:'' }); c1.defects.push({ id:'x' });
+  assert.equal(classifyListing({ title:'Nezapne se', description:'', condition:'' }).defects.length, 1);
+  const links = ['https://www.k24.cz/product/1/Lenovo_LOQ_Essential_15_Ryzen_5_150_16GB_512GB_RTX5050.html','https://www.k24.cz/product/2/Lenovo_LOQ_Essential_15_Ryzen_5_150_32GB_512GB_RTX5050.html','https://www.k24.cz/product/3/Lenovo_LOQ_15IRX9_i5-13450HX_16GB_512GB_RTX4050.html'];
+  assert.deepEqual(rankLinks(links, { model:'LOQ ESSENTIAL 15', cpu:'RYZEN 5 150', gpu:'RTX 5050', ramGb:16 }), [links[0]]);
+  assert.deepEqual(rankLinks(links, { model:'LOQ ESSENTIAL 15', cpu:'RYZEN 5 150', gpu:'RTX 5050', ramGb:null }), [links[0], links[1]]);
+});
+
 test('Missing hardware does not trigger network requests but exposes both manual search links',async()=>{
   const value=await lookupNewPrice({model:'LOQ 15IRH8'},new AbortController().signal,{getPage:async()=>{throw new Error('must not fetch');}});
   assert.equal(value.status,'insufficient');assert.equal(value.searchLinks.length,2);
