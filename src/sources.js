@@ -112,9 +112,11 @@ export async function collectSource(source, plan, filters, progress, signal, dep
     }
     if (source !== 'ebay') {
       const relevance = item => plan.termGroups.filter(group => groupMatches(item, group, plan.category)).length;
-      const pending = [...items.values()].filter(item => detailCandidate(item, plan, filters));
-      const needsCondition = item => plan.damaged && !damageEvidence(item).length;
-      pending.sort((a,b) => Number(needsCondition(b)) - Number(needsCondition(a)) || Number(productMatches(b,plan,filters)) - Number(productMatches(a,plan,filters)) || relevance(b) - relevance(a));
+      // Sort keys are computed once per listing, not on every comparison.
+      const pending = [...items.values()].filter(item => detailCandidate(item, plan, filters))
+        .map(item => ({ item, condition: Number(plan.damaged && !damageEvidence(item).length), match: Number(productMatches(item,plan,filters)), relevance: relevance(item) }))
+        .sort((a,b) => b.condition - a.condition || b.match - a.match || b.relevance - a.relevance)
+        .map(x => x.item);
       report.detailCandidates = pending.length;
       const candidates = pending.slice(0, report.detailLimit);
       if (pending.length > candidates.length) report.warnings.push(`Limit popisů: ${pending.length - candidates.length} dalších kandidátů zůstane bez přečteného detailu. Pro širší záběr zvyš počet popisů.`);

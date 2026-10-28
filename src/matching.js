@@ -1,4 +1,4 @@
-import { normalize } from './schema.js';
+import { normalize, memo } from './schema.js';
 import { hasTerm, groupMatches, productGroups } from './vocabulary.js';
 import { extractHardware, hardwareMatches } from './hardware.js';
 import { classifyListing } from './defects.js';
@@ -6,8 +6,8 @@ import { regionOf } from './regions.js';
 
 const defectTerms = ['nefunkcni','nefunkcnost','nezapina','nejde zapnout','nenabiha','nejde obraz','bez obrazu','rozbity','rozbita','rozbite','poskozeny','poskozena','poskozene','vadny','vadna','vadne','na opravu','na dily','nefunkc','broken','faulty','not working','for parts','spares or repair','does not power','cracked screen','praskly displej','praskla obrazovka','netestovan','untested'];
 
-export function damageEvidence(item) {
-  const text = normalize(`${item.title}. ${item.description}. ${item.condition}`);
+const textEvidence = memo(raw => {
+  const text = normalize(raw);
   // Negated phrases must not turn healthy listings into damaged ones.
   const withoutNegations = text.replace(/(?:neni|nejsou|nebyl|not|never)\s+(?:nijak\s+)?(?:poskozen\w*|rozbit\w*|vadn\w*|nefunkcn\w*|broken|faulty|damaged|defective)/g, '').replace(/bez\s+(?:vad\w*|poskozeni|zavad\w*|poruch\w*)/g, '');
   const hits = defectTerms.filter(term => withoutNegations.includes(term));
@@ -19,6 +19,11 @@ export function damageEvidence(item) {
     [/\b(?:spares|defective|does not work|wont turn on|won't turn on|no power|dead motherboard|black screen)\b/, 'nefunkční / díly'],
   ];
   for (const [pattern, label] of patterns) if (pattern.test(withoutNegations)) hits.push(label);
+  return hits;
+}, 10000);
+
+export function damageEvidence(item) {
+  const hits = [...textEvidence(`${item.title}. ${item.description}. ${item.condition}`)];
   if (String(item.conditionId) === '7000') hits.push('eBay: stav na díly / nefunkční');
   return [...new Set(hits)];
 }

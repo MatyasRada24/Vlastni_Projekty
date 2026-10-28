@@ -1,4 +1,4 @@
-import { normalize } from './schema.js';
+import { normalize, memo } from './schema.js';
 
 const canonical = value => normalize(value).replace(/[^a-z0-9]/g, '');
 const tidy = value => value.replace(/\s+/g, ' ').trim().toUpperCase();
@@ -184,8 +184,15 @@ function distinct(key, values) {
 
 // Sources are ranked: named fields, then the listing title, then the free description.
 // A stronger source wins; conflicting values within the deciding source stay unknown.
+const extractCached = memo(key => { const [title, description] = key.split('\u0000'); return extract(title, description); }, 10000);
+// Callers may adjust the result (e.g. a retailer part number), so each call gets its own copy.
 export function extractHardware(item) {
-  const title = prepare(item.title ?? ''), description = prepare(item.description ?? '');
+  const result = extractCached(`${item.title ?? ''}\u0000${item.description ?? ''}`);
+  return { ...result, ambiguous: [...result.ambiguous] };
+}
+
+function extract(rawTitle, rawDescription) {
+  const title = prepare(rawTitle), description = prepare(rawDescription);
   const apple = /\b(?:apple|macbook)\b/.test(`${title} ${description}`);
   const tiers = [labelled(`${title}. ${description}`, apple), freeText(title, {title:true, apple}), freeText(description, {apple})];
   const result = {}, ambiguous = [];

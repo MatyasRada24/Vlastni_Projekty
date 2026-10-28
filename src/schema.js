@@ -50,7 +50,23 @@ export const searchSchema = z.object({
   gbpRate: z.number().min(1).max(1000).default(30),
 }).refine(v => v.minPrice === null || v.maxPrice === null || v.minPrice <= v.maxPrice, { message: 'Cena od nesmí být vyšší než cena do.' });
 
-export const normalize = value => String(value ?? '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
+// The same listing texts are normalized many times per run (each search term, filter and detector),
+// so pure text functions keep a bounded cache keyed by the input string.
+export function memo(fn, max = 20000) {
+  const cache = new Map();
+  return key => {
+    let value = cache.get(key);
+    if (value === undefined) {
+      if (cache.size >= max) cache.clear();
+      value = fn(key);
+      cache.set(key, value);
+    }
+    return value;
+  };
+}
+
+const normalizeText = memo(text => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim());
+export const normalize = value => normalizeText(String(value ?? ''));
 export const clean = value => String(value ?? '').replace(/\s+/g, ' ').trim();
 
 export function safeUrl(value, base, hosts) {

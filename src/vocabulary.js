@@ -1,4 +1,4 @@
-import { normalize } from './schema.js';
+import { normalize, memo } from './schema.js';
 
 export const productGroups = {
   laptops: ['notebook', 'laptop', 'macbook', 'thinkpad', 'ideapad', 'probook', 'elitebook', 'latitude', 'zenbook', 'vivobook', 'legion', 'predator', 'nitro', 'alienware', 'victus', 'omen', 'pavilion', 'inspiron', 'vostro', 'aspire', 'swift', 'travelmate', 'lifebook', 'satellite', 'yoga', 'chromebook', 'expertbook', 'precision', 'tuf', 'rog', 'katana', 'sword', 'cyborg', 'stealth', 'raider', 'aorus', 'gigabyte aero'],
@@ -12,13 +12,17 @@ productGroups.laptops.push(...gamingFamilies);
 gamingTerms.push(...gamingFamilies);
 
 // Same model written as RTX3060, RTX-3060 or RTX 3060. Token boundaries avoid ROG matching "program".
-export const matchText = value => normalize(value).replace(/([a-z])(\d)/g, '$1 $2').replace(/(\d)([a-z])/g, '$1 $2').replace(/[^a-z0-9]+/g, ' ').trim();
+const matchTextOf = memo(value => normalize(value).replace(/([a-z])(\d)/g, '$1 $2').replace(/(\d)([a-z])/g, '$1 $2').replace(/[^a-z0-9]+/g, ' ').trim());
+export const matchText = value => matchTextOf(String(value ?? ''));
+// Padded haystack and its word list are reused for every term checked against the same listing.
+const padded = memo(text => ` ${matchText(text)} `);
+const words = memo(text => matchText(text).split(' '));
 const stems = new Set(['notebook','laptop','grafick','konzol','telefon','herni']);
 export function hasTerm(text, term) {
-  const haystack = matchText(text), needle = matchText(term);
+  const needle = matchText(term);
   if (!needle) return false;
-  if (stems.has(needle)) return haystack.split(' ').some(word => word.startsWith(needle));
-  return ` ${haystack} `.includes(` ${needle} `);
+  if (stems.has(needle)) return words(String(text ?? '')).some(word => word.startsWith(needle));
+  return padded(String(text ?? '')).includes(` ${needle} `);
 }
 
 export function expandGroup(group, category) {

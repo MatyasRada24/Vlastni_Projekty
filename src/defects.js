@@ -1,4 +1,4 @@
-import { normalize } from './schema.js';
+import { normalize, memo } from './schema.js';
 
 // Ids are shared with the client: repair-cost settings are keyed by defect id.
 export const defectTypes = [
@@ -27,8 +27,14 @@ const riskTypes = [
 // Sellers often state the absence of a risk: "bez hesla v BIOSu", "odhlášený z iCloudu".
 const negations = /\b(?:bez hesla|neni (?:zamcen\w*|zablokovan\w*|blokovan\w*)|nema (?:heslo|zamek|blokaci)|odhlasen\w*(?: (?:z|od))? icloud\w*|odhlaseny|neblokovan\w*|bez blokace|bez zamku|no (?:bios )?password|not locked|icloud (?:je )?odhlasen\w*|vcetne nabijecky|s nabijeckou|nabijecka (?:je )?soucasti)\b/;
 
+const classifyCached = memo(raw => classify(raw), 10000);
 export function classifyListing(item) {
-  const text = normalize(`${item.title}. ${item.description}. ${item.condition}`)
+  const result = classifyCached(`${item.title}. ${item.description}. ${item.condition}`);
+  return { defects: result.defects.map(d => ({...d})), risks: result.risks.map(r => ({...r})) };
+}
+
+function classify(raw) {
+  const text = normalize(raw)
     .replace(/(?:neni|nejsou|nebyl\w*|not|never)\s+(?:nijak\s+)?(?:poskozen\w*|rozbit\w*|vadn\w*|nefunkcn\w*|praskl\w*|polit\w*|broken|damaged)/g, ' ');
   const defects = defectTypes.filter(([, , re]) => re.test(text)).map(([id,label]) => ({id,label}));
   const riskText = text.replace(new RegExp(negations.source, 'g'), ' ');
