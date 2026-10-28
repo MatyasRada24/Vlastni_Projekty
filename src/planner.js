@@ -17,7 +17,8 @@ export function rulePlan(prompt, forcedCategory = null) {
   // may name its parts and gaming line ("Legion RTX 3060"), so those stay for notebooks and PCs.
   const computer = category === 'laptops' || category === 'desktops';
   const own = new Set([...productGroups[category], ...(computer ? [...gaming, ...productGroups.gpu, ...productGroups.cpu] : [])].map(normalize));
-  const foreign = new Set([...Object.entries(productGroups).filter(([id]) => id !== category).flatMap(([, terms]) => terms), ...gaming].map(normalize).filter(term => !own.has(term)));
+  // A component model is typed on purpose: "ASUS ROG Strix B550-F" keeps ROG although ROG also names notebooks.
+  const foreign = categories[category]?.group === 'components' ? new Set() : new Set([...Object.entries(productGroups).filter(([id]) => id !== category).flatMap(([, terms]) => terms), ...gaming].map(normalize).filter(term => !own.has(term)));
   const remaining = residual.filter(w => withoutBudget.split(/[^a-z0-9]+/).includes(w) && !foreign.has(w))
     // "Pixel 9" or "RTX 3060" is one model name: a lone "9" would also match the code "G9S9B" of a Pixel 6.
     .reduce((list, word) => {
@@ -46,7 +47,13 @@ const schema = {
 
 export async function createPlan(filters, { env = process.env, fetchFn = fetch, signal } = {}) {
   let plan = rulePlan(filters.prompt, filters.category), mode = 'rules', warning = null;
-  if (filters.useAI && env.OPENAI_API_KEY) {
+  // A component search is the chosen kind plus an optional model ("RTX 4080"); free-text planning
+  // would only add guesses, so the AI is not asked.
+  const component = categories[filters.category].group === 'components';
+  if (component) {
+    const model = plan.keywords.join(' ');
+    plan.explanation = `${categories[filters.category].label}${model ? ` · model „${model}“: inzerát musí obsahovat každou část modelu` : ': všechny nabídky v kategorii'}. Stav a cenu určují filtry.`;
+  } else if (filters.useAI && env.OPENAI_API_KEY) {
     try {
       const response = await fetchFn('https://api.openai.com/v1/responses', {
         method: 'POST', signal: AbortSignal.any([signal ?? new AbortController().signal, AbortSignal.timeout(30000)]),

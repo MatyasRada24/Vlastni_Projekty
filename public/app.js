@@ -55,7 +55,22 @@ const parameterTexts = {
   phones: ['Parametry telefonu', 'Výrobce, RAM a úložiště'],
 };
 const searchCategory = () => $('#category').value === 'components' ? $('#component').value : $('#category').value;
+// For components the text field is only an optional model; the description for other categories is kept aside.
+const componentExamples = { ram:'Např. DDR4 3200', cpu:'Např. Ryzen 7 5800X3D', gpu:'Např. RTX 4080', ssd:'Např. Samsung 970 EVO', psu:'Např. Corsair RM750x', mb:'Např. B550' };
+const componentLabel = kind => `${$('#component').querySelector(`option[value="${kind}"]`)?.textContent ?? kind}`;
+const searchName = f => componentKinds.includes(f.category) ? `Komponenty · ${componentLabel(f.category)}${f.prompt ? ` · ${f.prompt}` : ''}` : f.prompt;
+let promptMode = 'other';
+const promptMemory = { other: '', component: '' };
+function applyPromptMode() {
+  const mode = $('#category').value === 'components' ? 'component' : 'other';
+  if (mode !== promptMode) { promptMemory[promptMode] = $('#prompt').value; $('#prompt').value = promptMemory[mode]; promptMode = mode; }
+  const component = mode === 'component';
+  $('#search-label').textContent = component ? 'Model komponenty · nepovinné' : 'Co bude tvůj další projekt?';
+  $('#prompt').placeholder = component ? `${componentExamples[$('#component').value]}. Bez modelu se hledají všechny nabídky.` : 'Například rozbitý herní notebook Lenovo Legion…';
+  $('#prompt').required = !component; $('#prompt').minLength = component ? 0 : 2;
+}
 function applyCategory(brand = $('#brand').value) {
+  applyPromptMode();
   const category = $('#category').value;
   document.querySelectorAll('[data-for]').forEach(el => { el.hidden = !el.dataset.for.split(' ').includes(category); });
   // Components are filtered by kind and price only, so their parameter section disappears.
@@ -294,6 +309,7 @@ $('#search-form').addEventListener('submit', async event => {
 $('#cancel-button').addEventListener('click', async () => { if (!job) return; try { await api(`/api/search/${job.id}/cancel`, { method:'POST', body:'{}' }); toast('Zastavuji vyhledávání…'); } catch(e) { showError(e.message); } });
 $('#source-tabs').addEventListener('click', event => { const tab = event.target.closest('[data-source]'); if (!tab) return; currentSource = tab.dataset.source; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === tab)); renderItems(); });
 $('#category').addEventListener('change', () => applyCategory());
+$('#component').addEventListener('change', applyPromptMode);
 $('#sort').addEventListener('change', renderItems);
 $('#defect-filter').addEventListener('change', renderItems);
 $('#show-hidden').addEventListener('change', renderItems);
@@ -386,7 +402,7 @@ function renderWatch(state) {
   const unseen = state.alerts.filter(a => !a.seen);
   $('#watch-count').hidden = !unseen.length; $('#watch-count').textContent = unseen.length;
   const c = state.config;
-  $('#watch-status').textContent = !c?.enabled ? 'Hlídání je vypnuté.' : state.running ? `Právě hledám: „${c.filters.prompt}“…` : `Hlídám „${c.filters.prompt}“ · ${c.intervalMinutes >= 60 ? `každé ${c.intervalMinutes / 60} h` : `každých ${c.intervalMinutes} min`} · poslední běh ${timeText(state.lastRun)} · další ${timeText(state.nextRun)}${state.lastError ? ` · ${state.lastError}` : ''}`;
+  $('#watch-status').textContent = !c?.enabled ? 'Hlídání je vypnuté.' : state.running ? `Právě hledám: „${searchName(c.filters)}“…` : `Hlídám „${searchName(c.filters)}“ · ${c.intervalMinutes >= 60 ? `každé ${c.intervalMinutes / 60} h` : `každých ${c.intervalMinutes} min`} · poslední běh ${timeText(state.lastRun)} · další ${timeText(state.nextRun)}${state.lastError ? ` · ${state.lastError}` : ''}`;
   if (c) { $('#watch-interval').value = c.intervalMinutes; $('#watch-min-profit').value = c.minProfit ?? ''; }
   $('#watch-stop').disabled = !c?.enabled;
   $('#watch-alerts').innerHTML = state.alerts.length ? state.alerts.map(a => `<div class="watch-alert" data-seen="${a.seen}"><a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(a.title)} ↗</a><strong>${a.priceCzk == null ? '—' : `${money(a.priceCzk)} Kč`}</strong><small>${escapeHtml(names[a.source] ?? a.source)} · ${a.reason === 'new' ? 'nová nabídka' : `zlevněno z ${money(a.previousPrice)} Kč`}${a.grossProfit != null ? ` · hrubý rozdíl ${money(a.grossProfit)} Kč` : ''} · ${timeText(a.foundAt)}</small></div>`).join('') : '<p class="subtle">Zatím žádná upozornění.</p>';
@@ -400,7 +416,7 @@ function renderWatch(state) {
 async function refreshWatch() { try { renderWatch(await api('/api/watch')); } catch {} }
 async function saveWatch(enabled) {
   const data = filters();
-  if (enabled && !data.prompt) return showError('Vyplň zadání hledání, které se má hlídat.');
+  if (enabled && !data.prompt && !componentKinds.includes(data.category)) return showError('Vyplň zadání hledání, které se má hlídat.');
   if (enabled && 'Notification' in window && Notification.permission === 'default') { try { await Notification.requestPermission(); } catch {} }
   const minProfit = $('#watch-min-profit').value.trim() === '' ? null : Number($('#watch-min-profit').value);
   try {
@@ -414,8 +430,8 @@ $('#watch-stop').addEventListener('click', () => saveWatch(false));
 $('#watch-clear').addEventListener('click', async () => { try { renderWatch(await api('/api/watch/clear', { method:'POST', body:'{}' })); } catch (error) { showError(error.message); } });
 setInterval(refreshWatch, 60000);
 $('#save-settings').addEventListener('click', () => { { writeLocal('lovec-rates', { useCnb: $('#use-cnb').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value) }); costs = readCosts(); writeLocal('lovec-costs', costs); lastResultsKey = ''; renderItems(); toast('Náklady jsou přepočítané. Kurzy se použijí při příštím hledání.'); } });
-function renderSearches() { $('#saved-searches').innerHTML = '<option value="">Vyber uložené…</option>' + searches.map((s,i) => `<option value="${i}">${escapeHtml(s.prompt)}</option>`).join(''); }
-$('#save-search').addEventListener('click', () => { const data = filters(); if (!data.prompt) return; searches = [data, ...searches.filter(s => JSON.stringify(s) !== JSON.stringify(data))].slice(0,20); writeLocal('lovec-searches', searches); renderSearches(); toast('Hledání uloženo v prohlížeči.'); });
+function renderSearches() { $('#saved-searches').innerHTML = '<option value="">Vyber uložené…</option>' + searches.map((s,i) => `<option value="${i}">${escapeHtml(searchName(s))}</option>`).join(''); }
+$('#save-search').addEventListener('click', () => { const data = filters(); if (!data.prompt && !componentKinds.includes(data.category)) return; searches = [data, ...searches.filter(s => JSON.stringify(s) !== JSON.stringify(data))].slice(0,20); writeLocal('lovec-searches', searches); renderSearches(); toast('Hledání uloženo v prohlížeči.'); });
 $('#saved-searches').addEventListener('change', event => { if (event.target.value !== '') restoreFilters(searches[Number(event.target.value)]); });
 $('#delete-search').addEventListener('click', () => { const index = $('#saved-searches').value; if (index === '') return; searches.splice(Number(index),1); writeLocal('lovec-searches', searches); renderSearches(); toast('Uložené hledání smazáno.'); });
 $('#export').addEventListener('click', () => {

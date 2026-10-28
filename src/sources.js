@@ -28,7 +28,8 @@ export function searchUrl(source, plan, page = 1) {
     return url.href;
   }
   const url = new URL('https://www.ebay.com/sch/i.html');
-  url.searchParams.set('_nkw', keywordQuery(plan, category.group ? '' : plan.queryEn));
+  const keywords = keywordQuery(plan, category.group ? '' : plan.queryEn);
+  if (keywords) url.searchParams.set('_nkw', keywords);
   if (category.ebay) url.searchParams.set('_sacat', category.ebay);
   if (plan.damaged) url.searchParams.set('LH_ItemCondition', '7000');
   return url.href;

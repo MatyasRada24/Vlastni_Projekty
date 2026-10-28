@@ -1,6 +1,6 @@
 import { normalize, memo, categories } from './schema.js';
 import { hasTerm, groupMatches, productGroups } from './vocabulary.js';
-import { specsFor, hardwareMatches } from './hardware.js';
+import { specsFor, hardwareMatches, extractHardware } from './hardware.js';
 import { classifyListing } from './defects.js';
 import { regionOf } from './regions.js';
 
@@ -37,10 +37,16 @@ const accessories = {
   gpu: /(?:chladic|ventilator|backplate|riser|drzak|kabel|redukce|vodni blok|waterblock|bracket|zdroj)/,
   cpu: /(?:chladic|ventilator|pasta|cooler)/,
 };
+// eBay part listings name the card first and the part later: "RTX 4080 Ultra W OC GPU Heatsink 7 Heatpipe".
+const partsAnywhere = {
+  gpu: /\b(?:heatsink|heat sink|heatpipe|cooler|cooling fan|fans? for|power cable|cable|connector|adapter|backplate|bracket|shroud|riser|thermal pads?|water ?block|chladic\w*|ventilator\w*)\b/,
+  cpu: /\b(?:cooler|heatsink|heat sink|chladic\w*|delid\w*|socket protector)\b/,
+};
 function isAccessory(item, plan) {
   const pattern = accessories[plan.category];
   if (!pattern) return false;
   const title = normalize(item.title);
+  if (partsAnywhere[plan.category]?.test(title)) return true;
   if (new RegExp(accessoryStart + pattern.source).test(title)) return true;
   // "Průhledné pouzdro 3mk pro Google Pixel 10A": the accessory word precedes every product name and is "for" something.
   // "Prasklý displej Samsung Galaxy" (no "pro") or "Lenovo Legion, nová baterie, pro hráče" stay devices.
@@ -48,6 +54,17 @@ function isAccessory(item, plan) {
   return Boolean(match) && ![...(productGroups[plan.category] ?? []), ...brands].some(term => hasTerm(title.slice(0, match.index), term));
 }
 const brands = ['hp','dell','lenovo','asus','acer','msi','apple','toshiba','fujitsu','samsung','huawei','xiaomi','razer','xps','sony','google','microsoft','nvidia','amd','gigabyte','zotac','palit','sapphire','evga','pny','inno3d','gainward','asrock','powercolor'];
+
+// Aukro's text search leaves the category, so "RTX 4080" among graphics cards also brings notebooks and PCs.
+// A component listing never names a whole computer, nor lists processor, memory and disk together.
+const wholeDevice = /\b(?:notebook\w*|laptop\w*|ultrabook|macbook|herni pc|pc sestav\w*|sestava|pocitac\w*|desktop|all in one|mini pc)\b/;
+export function isWholeDevice(item, plan) {
+  if (categories[plan.category]?.group !== 'components') return false;
+  const title = normalize(item.title);
+  if (wholeDevice.test(title)) return true;
+  const specs = extractHardware({ title: item.title, description: '' });
+  return Boolean(specs.cpu && specs.ramGb && specs.storageGb);
+}
 
 // "Koupím iPhone na díly" is a buyer's request, not an offer.
 const wantedAd = /^(?:koupim|vykoupim|vykup|shanim|hledam|poptavam|poptavka|wanted|buying)\b/;
@@ -63,7 +80,7 @@ export function productMatches(item, plan, filters) {
   if (!plan.termGroups.every(group => (fromCategory && group.every(term => generic.has(term))) || groupMatches(item, group, plan.category))) return false;
   if (!filters.includeTerms.every(term => hasTerm(text, term))) return false;
   if (plan.excludeTerms.some(term => hasTerm(text, term))) return false;
-  if (isAccessory(item, plan)) return false;
+  if (isAccessory(item, plan) || isWholeDevice(item, plan)) return false;
   return true;
 }
 
@@ -103,6 +120,7 @@ export function rejectionReason(item, plan, filters) {
   if (missingInclude) return `Chybí povinný výraz „${missingInclude}“`;
   if (plan.excludeTerms.some(term => hasTerm(text, term))) return 'Obsahuje vyloučený výraz';
   if (isAccessory(item, plan)) return 'Příslušenství nebo náhradní díl';
+  if (isWholeDevice(item, plan)) return 'Celý počítač nebo notebook, ne komponenta';
   if (!productMatches(item, plan, filters)) return 'Neodpovídá hledanému zboží nebo modelu';
   if (!hardwareMatches(specsFor(item, plan.category), filters, plan.category)) return 'Nesplňuje zadané parametry';
   if (plan.damaged && !damageEvidence(item).length) return 'Bez zmínky o závadě (hledáš kusy na opravu)';

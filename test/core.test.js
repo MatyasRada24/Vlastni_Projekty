@@ -82,6 +82,31 @@ test('A hand-picked category rebuilds the search terms and keeps only that kind 
   assert.equal(searchUrl('bazos', ssd), 'https://pc.bazos.cz/hdd/');
   assert.ok(!searchUrl('ebay', ssd).includes('_nkw=ssd'), 'a component category needs no generic keyword');
 });
+test('Components search the chosen kind; an optional model narrows it', async () => {
+  const gpu = title => ({ id:'bazos:5', source:'bazos', category:'gpu', title, description:'', price:9000, currency:'CZK', shipping:null, location:'Brno', condition:'', saleType:'classified' });
+  const all = searchSchema.parse({ prompt:'', sources:['bazos','aukro','ebay'], category:'gpu', maxPrice:null });
+  const plan = await createPlan(all, { env:{ OPENAI_API_KEY:'x' }, fetchFn: async () => { throw new Error('AI must not be asked'); } });
+  assert.equal(plan.damaged, false); assert.deepEqual(plan.keywords, []); assert.equal(plan.warning, null);
+  assert.ok(evaluate(gpu('Gigabyte Radeon RX 6600 8GB'), plan, all));
+  assert.equal(searchUrl('aukro', plan), 'https://aukro.cz/pc-graficke-karty');
+  const f = searchSchema.parse({ prompt:'RTX 4080', sources:['bazos','aukro','ebay'], category:'gpu', maxPrice:null });
+  const model = await createPlan(f, { env:{} });
+  assert.deepEqual(model.keywords, ['rtx 4080']);
+  assert.equal(searchUrl('aukro', model), 'https://aukro.cz/pc-graficke-karty?text=rtx+4080');
+  assert.ok(evaluate(gpu('MSI GeForce RTX4080 Gaming X Trio 16G'), model, f));
+  assert.ok(evaluate(gpu('Gigabyte RTX 4080 SUPER Windforce'), model, f));
+  assert.equal(evaluate(gpu('ASUS RTX 4070 Ti, vyměním za 4080'), model, f), null);
+  // Aukro's text search also returns whole computers with that GPU.
+  assert.equal(evaluate(gpu('MSI Vector 16 HX A14VHG i7-14700HX 16GB 1TB SSD RTX 4080'), model, f), null);
+  assert.equal(evaluate(gpu('[nové] Herní PC: Core i7/ 32GB/ RTX 4080/ SSD 2TB'), model, f), null);
+  assert.ok(evaluate(gpu('RTX 4080 16GB GDDR6X Founders Edition'), model, f));
+  assert.equal(evaluate(gpu('Colorful iGame RTX 4080 Ultra W OC GPU Heatsink 7 Heatpipe 3Fan'), model, f), null);
+  assert.equal(evaluate(gpu('NEW 3x8 8 to 12+4 Graphics Power Cable Connector for NVIDI RTX 4080'), model, f), null);
+  // A model may contain words that name other categories.
+  const board = await createPlan(searchSchema.parse({ prompt:'ASUS ROG Strix B550-F', sources:['bazos'], category:'mb' }), { env:{} });
+  assert.ok(board.keywords.includes('rog'));
+  assert.throws(() => searchSchema.parse({ prompt:'', sources:['bazos'], category:'laptops' }));
+});
 test('Required terms are searched for, not just filtered', async () => {
   const f = searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos','aukro','ebay'], category:'phones', includeTerms:['Google pixel 10a'], condition:'any', maxPrice:null });
   const plan = await createPlan(f, { env:{} });

@@ -29,7 +29,8 @@ export const planSchema = z.object({
 }).strict();
 
 export const searchSchema = z.object({
-  prompt: z.string().trim().min(2).max(600),
+  // For components the prompt is an optional model; other categories need a description.
+  prompt: z.string().trim().max(600).default(''),
   sources: z.array(z.enum(['bazos', 'aukro', 'ebay'])).min(1).max(3).transform(v => [...new Set(v)]),
   category: z.preprocess(categoryOf, z.enum(Object.keys(categories))),
   condition: z.enum(['auto', 'damaged', 'any']).default('auto'),
@@ -58,7 +59,8 @@ export const searchSchema = z.object({
   usdRate: z.number().min(1).max(1000).default(23),
   eurRate: z.number().min(1).max(1000).default(25),
   gbpRate: z.number().min(1).max(1000).default(30),
-}).refine(v => v.minPrice === null || v.maxPrice === null || v.minPrice <= v.maxPrice, { message: 'Cena od nesmí být vyšší než cena do.' });
+}).refine(v => v.minPrice === null || v.maxPrice === null || v.minPrice <= v.maxPrice, { message: 'Cena od nesmí být vyšší než cena do.' })
+  .refine(v => categories[v.category].group === 'components' || v.prompt.length >= 2, { message: 'Vyplň zadání hledání.' });
 
 // The same listing texts are normalized many times per run (each search term, filter and detector),
 // so pure text functions keep a bounded cache keyed by the input string.
