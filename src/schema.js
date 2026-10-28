@@ -2,9 +2,9 @@ import { z } from 'zod';
 
 export const categories = {
   laptops: { label: 'Notebooky', bazos: 'https://pc.bazos.cz/notebook/', aukro: 'https://aukro.cz/notebooky-netbooky', ebay: '175672' },
-  graphics: { label: 'Grafické karty', bazos: 'https://pc.bazos.cz/graficka/', query: 'grafická karta', ebay: '27386' },
-  consoles: { label: 'Herní konzole', bazos: 'https://pc.bazos.cz/playstation/', query: 'herní konzole', ebay: '139971' },
-  phones: { label: 'Mobilní telefony', bazos: 'https://mobil.bazos.cz/', query: 'mobilní telefon', ebay: '9355' },
+  graphics: { label: 'Grafické karty', bazos: 'https://pc.bazos.cz/graficka/', aukro: 'https://aukro.cz/pc-graficke-karty', query: 'grafická karta', ebay: '27386' },
+  consoles: { label: 'Herní konzole', bazos: 'https://pc.bazos.cz/playstation/', aukro: 'https://aukro.cz/herni-konzole', query: 'herní konzole', ebay: '139971' },
+  phones: { label: 'Mobilní telefony', bazos: 'https://mobil.bazos.cz/', aukro: 'https://aukro.cz/mobilni-telefony', query: 'mobilní telefon', ebay: '9355' },
   all: { label: 'Všechny kategorie', bazos: 'https://www.bazos.cz/' },
 };
 

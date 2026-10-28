@@ -1,11 +1,12 @@
-import { normalize, planSchema } from './schema.js';
+import { normalize, planSchema, categories } from './schema.js';
 import { productGroups, gamingTerms as gaming, hasTerm } from './vocabulary.js';
 
 
-export function rulePlan(prompt) {
+export function rulePlan(prompt, forcedCategory = null) {
   const text = normalize(prompt);
   let category = 'all';
-  if (/grafick|graphics|gpu/.test(text)) category = 'graphics';
+  if (forcedCategory) category = forcedCategory;
+  else if (/grafick|graphics|gpu/.test(text)) category = 'graphics';
   else if (/konzol|console|playstation|xbox|nintendo|\bps[45]\b/.test(text)) category = 'consoles';
   else if (/telefon|phone|galaxy/.test(text)) category = 'phones';
   else if (/notebook|laptop|macbook|thinkpad/.test(text)) category = 'laptops';
@@ -17,7 +18,9 @@ export function rulePlan(prompt) {
   // Free text is treated as terms, never as executable instructions. Complex constraints need explicit filters or AI.
   const residual = text.replace(/na (?:opravu|dily)|nejde zapnout/g, '').split(/[^a-z0-9]+/).filter(w => (w.length > 1 || /^\d$/.test(w)) && !/^(hledam|najdi|chci|prosim|koupit|rozbit.*|nefunkc.*|nefung.*|nezap.*|nenab.*|netestovan.*|untested|poskozen.*|vadn.*|herni|gaming|notebook.*|laptop.*|grafick.*|kart.*|konzol.*|mobilni|telefon.*|broken|faulty|for|parts|do|od|kc|czk|korun|max|cena|levny|levne|levnou|levna|levneho|opravu|dily)$/.test(w));
   const withoutBudget = text.replace(/\b(?:do|od|max)\s+[\d\s.,]+\s*(?:kc|czk|korun)?/g, '');
-  const remaining = residual.filter(w => withoutBudget.split(/[^a-z0-9]+/).includes(w));
+  // With a category chosen by hand, product words of other categories ("Legion", "RTX") cannot be required.
+  const foreign = forcedCategory ? new Set(Object.entries(productGroups).filter(([id]) => id !== category).flatMap(([, terms]) => terms).concat(gaming).map(normalize)) : new Set();
+  const remaining = residual.filter(w => withoutBudget.split(/[^a-z0-9]+/).includes(w) && !foreign.has(w));
   for (const word of remaining.slice(0, 8)) termGroups.push([word]);
   const cs = { laptops: 'notebook', graphics: 'grafická karta', consoles: 'herní konzole', phones: 'telefon', all: prompt }[category];
   const en = { laptops: 'laptop', graphics: 'graphics card', consoles: 'game console', phones: 'phone', all: prompt }[category];
@@ -59,7 +62,13 @@ export async function createPlan(filters, { env = process.env, fetchFn = fetch, 
       warning = 'AI plán se nepodařilo získat. Použita lokální pravidla; zkontroluj plán a filtry.';
     }
   } else if (filters.useAI) warning = 'OPENAI_API_KEY není nastavený. Vyhledávání používá lokální pravidla.';
-  if (filters.category !== 'auto') plan.category = filters.category;
+  // A category chosen by hand rebuilds the search terms; otherwise "Rozbitý herní notebook" would keep
+  // requiring notebook words inside the phone or console category.
+  if (filters.category !== 'auto' && filters.category !== 'all' && plan.category !== filters.category) {
+    const forced = rulePlan(filters.prompt, filters.category);
+    plan = { ...forced, damaged: plan.damaged, explanation: `Zvolená kategorie „${categories[filters.category].label}“ má přednost před zadáním. ${forced.explanation}` };
+    mode = 'rules';
+  } else if (filters.category !== 'auto') plan.category = filters.category;
   if (filters.condition !== 'auto') plan.damaged = filters.condition === 'damaged';
   plan.excludeTerms = [...new Set([...plan.excludeTerms, ...filters.excludeTerms])];
   return { ...plan, mode, warning };

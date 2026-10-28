@@ -56,6 +56,24 @@ test('Excluded phrases, required terms and location obey explicit filters', asyn
   const f = filters({ excludeTerms:['politý'],includeTerms:['RTX'],location:'Brno' }); const p = await createPlan(f,{env:{}});
   assert.ok(evaluate(listing(),p,f)); assert.equal(evaluate(listing({description:'Politý, nejde zapnout'}),p,f),null); assert.equal(evaluate(listing({location:'Praha'}),p,f),null);
 });
+test('A hand-picked category rebuilds the search terms and keeps only that kind of goods', async () => {
+  for (const [category, cs] of [['phones','telefon'],['graphics','grafická karta'],['consoles','herní konzole']]) {
+    const plan = await createPlan(searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos'], category, useAI:false }), { env:{} });
+    assert.equal(plan.category, category); assert.equal(plan.queryCs, cs); assert.equal(plan.damaged, true);
+    assert.ok(!plan.termGroups.flat().includes('notebook'));
+  }
+  const all = await createPlan(searchSchema.parse({ prompt:'Rozbitý herní notebook', sources:['bazos'], category:'all', useAI:false }), { env:{} });
+  assert.ok(all.termGroups.flat().includes('notebook'));
+  const f = searchSchema.parse({ prompt:'telefon', sources:['bazos'], category:'phones', condition:'any', maxPrice:null });
+  const p = await createPlan(f, { env:{} });
+  const phone = title => ({ id:'bazos:9', source:'bazos', category:'phones', title, description:'', price:1500, currency:'CZK', shipping:null, location:'Brno', condition:'', saleType:'classified' });
+  assert.ok(evaluate(phone('Motorola Moto G54 128GB'), p, f));
+  assert.equal(evaluate(phone('Kryt na iPhone 13 Pro'), p, f), null);
+  assert.equal(evaluate(phone('KOUPÍM iPHONE A SAMSUNG – NA DÍLY'), p, f), null);
+  const c = await createPlan(searchSchema.parse({ prompt:'konzole', sources:['bazos'], category:'consoles', condition:'any' }), { env:{} });
+  assert.equal(evaluate({ ...phone('Ovladač PS5 DualSense bílý'), category:'consoles' }, c, f), null);
+});
+
 test('Region filter uses the postcode district, with city names as fallback', async () => {
   const { regionOf } = await import('../src/regions.js');
   assert.equal(regionOf('Brno 602 00'), 'jihomoravsky');

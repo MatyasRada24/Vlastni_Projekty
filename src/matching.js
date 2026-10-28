@@ -28,15 +28,30 @@ export function damageEvidence(item) {
   return [...new Set(hits)];
 }
 
+// Accessories and spare parts name the device only as compatibility ("Kryt na iPhone 13", "Ovladač PS5").
+const accessoryStart = '^(?:originalni |original |nova |novy |nove |nahradni |oem |pouzita |pouzity |sada |2x |\\d+x )*';
+const accessories = {
+  laptops: /(?:nabijeck|adapter|bateri|klavesnic|displej|panty|kryt|obal|pouzdro|dock|charger|keyboard|battery|lcd|screen|motherboard|zakladni desk)/,
+  phones: /(?:kryt|obal|pouzdr|tvrzen|ochrann|sklo|folie|nabijeck|nabijec|adapter|kabel|drzak|bateri|displej|lcd|sluchatk|case|cover|charger|screen protector|powerbank|stojan|reproduktor)/,
+  graphics: /(?:chladic|ventilator|backplate|riser|drzak|kabel|redukce|vodni blok|waterblock|bracket|zdroj)/,
+  consoles: /(?:ovladac|ovladace|gamepad|joystick|controller|hra |hry |kabel|nabijec|nabijeck|stojan|obal|pouzdr|kryt|skin|polep|headset|sluchatk|volant|disk |hdd|ssd|chladic|ventilator)/,
+};
 function isAccessory(item, plan) {
-  const title = normalize(item.title);
-  // Avoid accessories that mention a target model only as compatibility information.
-  return plan.category === 'laptops' && /^(?:originalni |original |nova |novy |nove |nahradni |oem |pouzita )*(?:nabijeck|adapter|bateri|klavesnic|displej|panty|kryt|obal|pouzdro|dock|charger|keyboard|battery|lcd|screen|motherboard|zakladni desk)/.test(title);
+  const pattern = accessories[plan.category];
+  return Boolean(pattern) && new RegExp(accessoryStart + pattern.source).test(normalize(item.title));
 }
 
+// "Koupím iPhone na díly" is a buyer's request, not an offer.
+const wantedAd = /^(?:koupim|vykoupim|vykup|shanim|hledam|poptavam|poptavka|wanted|buying)\b/;
+
 export function productMatches(item, plan, filters) {
+  if (wantedAd.test(normalize(item.title))) return false;
   const text = `${item.title} ${item.description} ${item.condition}`;
-  if (!plan.termGroups.every(group => groupMatches(item, group, plan.category))) return false;
+  // A listing taken from the category itself (phone category page, eBay category) needs no generic
+  // "telefon / phone" word; only the more specific groups such as a brand or model still apply.
+  const generic = new Set(productGroups[plan.category] ?? []);
+  const fromCategory = item.category === plan.category && plan.category !== 'all';
+  if (!plan.termGroups.every(group => (fromCategory && group.every(term => generic.has(term))) || groupMatches(item, group, plan.category))) return false;
   if (!filters.includeTerms.every(term => hasTerm(text, term))) return false;
   if (plan.excludeTerms.some(term => hasTerm(text, term))) return false;
   if (isAccessory(item, plan)) return false;

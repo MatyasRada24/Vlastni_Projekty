@@ -2,9 +2,9 @@ import { normalize, memo } from './schema.js';
 
 export const productGroups = {
   laptops: ['notebook', 'laptop', 'macbook', 'thinkpad', 'ideapad', 'probook', 'elitebook', 'latitude', 'zenbook', 'vivobook', 'legion', 'predator', 'nitro', 'alienware', 'victus', 'omen', 'pavilion', 'inspiron', 'vostro', 'aspire', 'swift', 'travelmate', 'lifebook', 'satellite', 'yoga', 'chromebook', 'expertbook', 'precision', 'tuf', 'rog', 'katana', 'sword', 'cyborg', 'stealth', 'raider', 'aorus', 'gigabyte aero'],
-  graphics: ['grafick', 'graphics', 'gpu', 'geforce', 'radeon', 'rtx', 'gtx'],
-  consoles: ['konzol', 'console', 'playstation', 'xbox', 'nintendo', 'ps4', 'ps5', 'steam deck'],
-  phones: ['telefon', 'phone', 'iphone', 'smartphone', 'galaxy', 'pixel', 'redmi', 'poco', 'oneplus'],
+  graphics: ['grafick', 'graphics', 'gpu', 'geforce', 'radeon', 'rtx', 'gtx', 'quadro', 'arc a', 'arc b'],
+  consoles: ['konzol', 'console', 'playstation', 'xbox', 'nintendo', 'switch', 'ps2', 'ps3', 'ps4', 'ps5', 'psp', 'ps vita', 'steam deck', 'rog ally', 'legion go', 'wii'],
+  phones: ['telefon', 'phone', 'iphone', 'smartphone', 'mobil', 'galaxy', 'pixel', 'redmi', 'poco', 'oneplus', 'xiaomi', 'motorola', 'moto g', 'nokia', 'honor', 'huawei', 'oppo', 'realme', 'vivo', 'xperia', 'nothing phone', 'fairphone', 'cat s'],
 };
 export const gamingTerms = ['herni', 'gaming', 'rtx', 'gtx', 'geforce', 'radeon rx', 'legion', 'rog', 'tuf', 'predator', 'nitro', 'alienware', 'victus', 'omen', 'katana', 'sword', 'cyborg', 'stealth', 'raider', 'aorus'];
 const gamingFamilies = ['loq', 'zephyrus', 'clevo', 'uniwill', 'msi gf', 'msi gl', 'msi gp', 'msi ge', 'msi gs', 'msi gt', 'msi bravo', 'msi pulse', 'dell g3', 'dell g5', 'dell g15'];
