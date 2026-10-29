@@ -56,7 +56,6 @@ const parameterTexts = {
 };
 const searchCategory = () => $('#category').value === 'components' ? $('#component').value : $('#category').value;
 // Every search is a category plus an optional model; each category remembers its own model text.
-const modelExamples = { laptops:'Např. Lenovo Legion 5', desktops:'Např. Dell OptiPlex 7070', phones:'Např. Pixel 9 nebo iPhone 13', ram:'Např. DDR4 3200', cpu:'Např. Ryzen 7 5800X3D', gpu:'Např. RTX 4080', ssd:'Např. Samsung 970 EVO', psu:'Např. Corsair RM750x', mb:'Např. B550' };
 const categoryLabel = id => componentKinds.includes(id) ? `Komponenty · ${$('#component').querySelector(`option[value="${id}"]`)?.textContent ?? id}` : $('#category').querySelector(`option[value="${id}"]`)?.textContent ?? id;
 const searchName = f => `${categoryLabel(f.category)}${f.prompt ? ` · ${f.prompt}` : ''}`;
 let promptCategory = null;
@@ -65,7 +64,6 @@ function applyPromptMode() {
   const category = searchCategory();
   if (promptCategory !== null && category !== promptCategory) { promptMemory[promptCategory] = $('#prompt').value; $('#prompt').value = promptMemory[category] ?? ''; }
   promptCategory = category;
-  $('#prompt').placeholder = `${modelExamples[category]}. Bez modelu se projde celá kategorie.`;
 }
 function applyCategory(brand = $('#brand').value) {
   applyPromptMode();
