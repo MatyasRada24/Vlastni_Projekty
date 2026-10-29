@@ -118,6 +118,8 @@ h1 span{color:var(--muted);font-weight:500}
 .advanced[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
 .advanced>summary:hover::after{border-color:var(--ink)}
 .summary-hint{font-size:13px;font-weight:400;color:var(--muted)}
+/* A filter remembered from an earlier search must be visible even when its section is collapsed. */
+.summary-hint.active-filters{display:inline;color:var(--accent);font-weight:600}
 .advanced-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin:18px 0}
 .advanced-bottom{display:flex;align-items:center;flex-wrap:wrap;gap:12px 24px}
 .advanced-spacer{flex:1}

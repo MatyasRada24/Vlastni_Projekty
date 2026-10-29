@@ -73,11 +73,30 @@ function applyCategory(brand = $('#brand').value) {
   document.querySelectorAll('[data-for]').forEach(el => { el.hidden = !el.dataset.for.split(' ').includes(category); });
   // Components are filtered by kind and price only, so their parameter section disappears.
   $('#parameters').hidden = category === 'components';
-  const [title, hint] = parameterTexts[category] ?? parameterTexts.laptops;
-  $('#parameters-title').textContent = title; $('#parameters-hint').textContent = hint;
+  const [title] = parameterTexts[category] ?? parameterTexts.laptops;
+  $('#parameters-title').textContent = title;
   $('#storage-label').textContent = category === 'phones' ? 'Úložiště alespoň · GB' : 'SSD alespoň · GB';
   $('#brand').innerHTML = `<option value="">Všichni výrobci</option>${(brandOptions[category] ?? []).map(([value,label]) => `<option value="${value}">${label}</option>`).join('')}`;
   $('#brand').value = (brandOptions[category] ?? []).some(([value]) => value === brand) ? brand : '';
+  showActiveFilters();
+}
+// Collapsed sections list the values that currently narrow the search, e.g. "Aktivní: Grafika RTX 3070 Ti".
+function showActiveFilters() {
+  const shown = el => !el.closest('[hidden]');
+  const value = id => shown($(id)) ? $(id).value.trim() : '';
+  const parameters = [
+    value('#brand') && `Výrobce ${$('#brand').selectedOptions[0].textContent}`,
+    value('#cpu') && `Procesor ${value('#cpu')}`, value('#gpu') && `Grafika ${value('#gpu')}`,
+    value('#min-ram') && `RAM ≥ ${value('#min-ram')} GB`, value('#min-storage') && `${$('#storage-label').textContent.split(' ')[0]} ≥ ${value('#min-storage')} GB`,
+    value('#min-vram') && `VRAM ≥ ${value('#min-vram')} GB`,
+  ].filter(Boolean);
+  const more = [
+    value('#include') && `Musí obsahovat ${value('#include')}`, value('#exclude') && `Nesmí obsahovat ${value('#exclude')}`,
+    value('#location') && `Lokalita ${value('#location')}`, value('#region') && `Kraj ${$('#region').selectedOptions[0].textContent}`,
+  ].filter(Boolean);
+  const hint = (id, active, fallback) => { $(id).textContent = active.length ? `Aktivní: ${active.join(' · ')}` : fallback; $(id).classList.toggle('active-filters', active.length > 0); };
+  hint('#parameters-hint', parameters, (parameterTexts[$('#category').value] ?? parameterTexts.laptops)[1]);
+  hint('#more-hint', more, 'Výrazy, lokalita, aukce a popisy');
 }
 function restoreFilters(data) {
   const fields = { prompt:'prompt', condition:'condition', minPrice:'min-price', maxPrice:'max-price', location:'location', region:'region', pages:'pages', detailLimit:'detail-limit', usdRate:'usd-rate', eurRate:'eur-rate', gbpRate:'gbp-rate' };
@@ -97,6 +116,7 @@ function restoreFilters(data) {
   for (const [key,id] of Object.entries({ includeAuctions:'auctions', includeUnknownPrice:'unknown-price' })) if (typeof data[key] === 'boolean') $(`#${id}`).checked = data[key];
   $('#include').value = (data.includeTerms ?? []).join(', '); $('#exclude').value = (data.excludeTerms ?? []).join(', ');
   if (data.sources) document.querySelectorAll('[name=source]').forEach(x => { x.checked = data.sources.includes(x.value); });
+  showActiveFilters();
 }
 function visibleItems() {
   const defect = $('#defect-filter').value, hideRisky = $('#hide-risky').checked, showHidden = $('#show-hidden').checked, onlyNew = $('#only-new').checked;
@@ -310,6 +330,8 @@ $('#cancel-button').addEventListener('click', async () => { if (!job) return; tr
 $('#source-tabs').addEventListener('click', event => { const tab = event.target.closest('[data-source]'); if (!tab) return; currentSource = tab.dataset.source; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === tab)); renderItems(); });
 $('#category').addEventListener('change', () => applyCategory());
 $('#component').addEventListener('change', applyPromptMode);
+$('#search-form').addEventListener('input', showActiveFilters);
+$('#search-form').addEventListener('change', showActiveFilters);
 $('#sort').addEventListener('change', renderItems);
 $('#defect-filter').addEventListener('change', renderItems);
 $('#show-hidden').addEventListener('change', renderItems);
