@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lovec",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--env-file-if-exists=.env", "server.js"],
+      "port": 3210
+    },
+    {
+      "name": "lovec-test",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--env-file-if-exists=.env", "server.js"],
+      "env": { "PORT": "3299", "LOVEC_DATA_DIR": "C:\\Users\\PC\\AppData\\Local\\Temp\\lovec-probe" },
+      "port": 3299
+    }
+  ]
+}
