@@ -8,6 +8,8 @@ import { priceRetailers } from './src/valuation.js';
 import { cnbRates } from './src/rates.js';
 import { store } from './src/store.js';
 import { createWatcher, watchSchema } from './src/watch.js';
+import { createSellerWatch, sellerInputSchema } from './src/sellers.js';
+import { SourceError } from './src/http.js';
 
 const jobs = new Map();
 const staticFiles = { '/': ['index.html','text/html'], '/app.js': ['app.js','text/javascript'], '/pricing.js':['pricing.js','text/javascript'], '/style.css': ['style.css','text/css'], '/favicon.svg':['favicon.svg','image/svg+xml'], '/fonts/fonts.css':['fonts/fonts.css','text/css'] };
@@ -19,6 +21,7 @@ for (const family of ['geist','geist-mono','bricolage-grotesque']) for (const su
 // of each description instead of up to 14 000 characters per listing.
 const publicJob = ({ controller, ...job }) => ({ ...job, items: (job.items ?? []).map(item => item.description?.length > 600 ? { ...item, description: `${item.description.slice(0, 600)}…` } : item) });
 const watcher = createWatcher({ store, runAgent, jobs });
+const sellerWatch = createSellerWatch({ store, isBusy: () => [...jobs.values()].some(j => j.status === 'running') });
 
 async function readBody(req) {
   if (!req.headers['content-type']?.startsWith('application/json')) throw Object.assign(new Error('Očekáván JSON.'), { status: 415 });
@@ -58,6 +61,20 @@ export function createServer() {
       }
       if (path === '/api/watch/seen' && req.method === 'POST') { await readBody(req); return send(200, await watcher.markSeen()); }
       if (path === '/api/watch/clear' && req.method === 'POST') { await readBody(req); return send(200, await watcher.clear()); }
+      if (path === '/api/sellers' && req.method === 'GET') { await sellerWatch.autoRefresh(); return send(200, await sellerWatch.status()); }
+      if (path === '/api/sellers' && req.method === 'POST') {
+        const parsed = sellerInputSchema.safeParse(await readBody(req));
+        if (!parsed.success) return send(400, { error: 'Vlož odkaz na prodejce nebo jeho jméno.' });
+        try { return send(200, await sellerWatch.add(parsed.data.input, parsed.data.source)); }
+        catch (error) { if (error instanceof SourceError) return send(400, { error: error.message }); throw error; }
+      }
+      if (path === '/api/sellers/remove' && req.method === 'POST') {
+        const body = await readBody(req);
+        if (typeof body?.id !== 'string' || body.id.length > 80) return send(400, { error: 'Neplatný prodejce.' });
+        return send(200, await sellerWatch.remove(body.id));
+      }
+      if (path === '/api/sellers/refresh' && req.method === 'POST') { await readBody(req); void sellerWatch.refresh(); return send(200, await sellerWatch.status()); }
+      if (path === '/api/sellers/seen' && req.method === 'POST') { await readBody(req); return send(200, await sellerWatch.markSeen()); }
       if (path === '/api/hidden') {
         if (req.method === 'GET') return send(200, await store.hidden());
         if (req.method === 'POST') {
@@ -102,4 +119,5 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT || 3210);
   createServer().listen(port, '127.0.0.1', () => console.log(`Lovec nabídek běží na http://127.0.0.1:${port}`));
   void watcher.init();
+  sellerWatch.init();
 }

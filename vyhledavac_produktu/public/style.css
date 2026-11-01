@@ -258,6 +258,34 @@ h1 span{color:var(--muted);font-weight:500}
 .manual-buttons{display:flex;gap:12px;align-items:center}
 .manual-buttons .primary{min-height:42px;font-size:14px}
 
+/* Sledovaní obchodníci */
+main.sellers-mode>:not(#sellers-view):not(#error):not(footer){display:none}
+.seller-form{display:grid;grid-template-columns:minmax(0,1fr) 160px auto;gap:12px;align-items:end}
+.seller-form .primary{min-height:44px}
+.seller-help{margin:10px 2px 18px}
+.seller-list{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}
+.seller-list:empty{display:none}
+.seller-chip{display:flex;align-items:flex-start;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 8px 10px 14px}
+.seller-chip[data-error=true]{border-color:color-mix(in srgb,var(--loss) 45%,var(--line))}
+.seller-chip a{font-weight:600;color:var(--ink);text-decoration:none}
+.seller-chip a:hover{text-decoration:underline}
+.seller-chip small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.seller-chip small b{color:var(--accent-strong)}
+.seller-chip .seller-error{color:var(--loss);max-width:40ch}
+.seller-chip .quiet-button{padding:2px 8px;min-height:0}
+.seller-offers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.seller-offers>.empty{grid-column:1/-1}
+.seller-offer{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.seller-offer>img,.seller-offer>.image-placeholder{width:100%;height:160px;object-fit:contain;background:var(--surface-2);padding:10px}
+.seller-offer-body{display:flex;flex-direction:column;gap:8px;padding:14px 16px 16px;flex:1}
+.seller-offer .listing-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.seller-offer h3{font-size:15px;line-height:1.35;font-weight:600;margin:0}
+.seller-offer h3 a{color:var(--ink);text-decoration:none}
+.seller-offer h3 a:hover{text-decoration:underline}
+.seller-offer-price{display:flex;flex-direction:column;margin-top:auto}
+.seller-offer-price strong{font-family:var(--mono);font-size:20px;letter-spacing:-.02em}
+#seller-more{margin:18px auto 0;display:flex}
+
 /* Prázdný stav */
 .empty{padding:56px 24px 52px;text-align:center;border:1.5px dashed var(--line-strong);border-radius:22px;background:color-mix(in srgb,var(--surface) 60%,transparent)}
 .empty-art{display:block;width:120px;height:80px;margin:0 auto 18px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -342,6 +370,9 @@ dialog code{font-family:var(--mono);background:var(--surface-2);border:1px solid
   .page-heading::before{inset:-28px -16px -16px}
   h1{font-size:clamp(40px,12vw,56px);margin-bottom:16px}
   .panel-heading{padding:18px 18px 0}
+  .seller-form{grid-template-columns:1fr}
+  .seller-offers{grid-template-columns:1fr 1fr;gap:10px}
+  .seller-offer>img,.seller-offer>.image-placeholder{height:120px}
   .panel-caption{display:none}
   .prompt-row{margin:4px 18px 0;padding-bottom:14px;flex-wrap:wrap}
   .prompt-row #prompt{font-size:21px;flex-basis:100%;height:56px}

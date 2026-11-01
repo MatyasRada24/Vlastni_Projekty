@@ -36,7 +36,7 @@ export function searchUrl(source, plan, page = 1) {
 }
 
 let tokenCache;
-async function ebayToken(env, signal, fetchFn) {
+export async function ebayToken(env, signal, fetchFn) {
   if (env.EBAY_ACCESS_TOKEN) return env.EBAY_ACCESS_TOKEN;
   if (!env.EBAY_CLIENT_ID || !env.EBAY_CLIENT_SECRET) throw new SourceError('Pro eBay doplň produkční EBAY_CLIENT_ID a EBAY_CLIENT_SECRET do .env (nebo EBAY_ACCESS_TOKEN).', 'not_configured');
   if (tokenCache && tokenCache.expires > Date.now()) return tokenCache.token;
