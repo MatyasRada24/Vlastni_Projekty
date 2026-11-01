@@ -54,6 +54,7 @@ export function parseAukro(html, pageUrl, now = Date.now()) {
       item.location = clean(`${row.location ?? ''} ${row.postcode ?? ''}`);
       item.saleType = row.auction === true ? 'auction' : row.auction === false ? 'fixed' : 'unknown';
       item.endAt = row.endingTime || null;
+      item.seller = clean(row.sellerLogin || row.seller?.showName) || null;
       // Aukro fills an empty category search with offers from elsewhere; the path tells them apart.
       if (Array.isArray(row.categoryPath)) item.aukroCategories = row.categoryPath.map(c => c?.seoUrl).filter(Boolean);
       const withShipping = parsePrice(row.priceWithShipping?.amount);
@@ -133,6 +134,7 @@ export function parseEbay(data, now = Date.now()) {
     item.location = clean([row.itemLocation?.city, row.itemLocation?.country].filter(Boolean).join(', '));
     item.country = row.itemLocation?.country ?? null;
     item.endAt = row.itemEndDate ?? null;
+    item.seller = clean(row.seller?.username) || null;
     const costs = (row.shippingOptions ?? []).filter(o => o.shippingCost?.currency === item.currency).map(o => parsePrice(o.shippingCost.value)).filter(x => x !== null);
     item.shipping = costs.length ? Math.min(...costs) : null;
     return [item];

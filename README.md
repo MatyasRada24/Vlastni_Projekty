@@ -68,10 +68,11 @@ Například nový kus za 20 000 Kč a rozbitý za 4 000 Kč dávají hrubý rozd
 - **Vlastní cena nového** může platit pro všechny nabídky se stejným modelem, CPU a GPU.
 - **Kraj**: filtr podle kraje určeného z PSČ (podle poštovních okrsků, přibližně) nebo názvu krajského města.
 - **Hlídání**: uložené hledání se spouští v intervalu 30 min až 24 h, jen když běží server a souběžně neběží ruční hledání. Upozorní na nové nebo zlevněné kusy nad zvolený hrubý rozdíl; upozornění prohlížeče se zobrazí, dokud je stránka otevřená.
+- **Obchodníci**: sledovaní prodejci z Aukra a eBay (až 30). Prodejce přidáš odkazem (`aukro.cz/uzivatel/jmeno`, `ebay.com/usr/jmeno`), jménem nebo tlačítkem „Sledovat prodejce“ u nabídky. Aplikace načte až 300 jeho nabídek a znovu je zkontroluje, když jsou starší než 30 minut (při otevření záložky nebo jednou za hodinu, pokud běží server). Nové a zlevněné nabídky od posledního otevření záložky jsou označené. Bazoš inzeráty jednoho prodejce procházet nedovoluje (`hodnoceni.php`, `idphone=` v robots.txt).
 
 ## Uložení a soukromí
 
-Posledních 20 běhů je v paměti procesu; restart je odstraní. Historie nabídek, skryté nabídky a nastavení hlídání jsou v `data/store.json`; smazáním souboru se vynulují. Oblíbené nabídky, poslední filtry a až 20 uložených hledání jsou v `localStorage` aktuálního prohlížeče. Nejde o trvale synchronizovanou databázi. Uložená nabídka může později zmizet nebo změnit cenu. Klíče jsou jen v `.env`, který je v `.gitignore`. Fotografie se načítají přímo z původních zdrojů.
+Posledních 20 běhů je v paměti procesu; restart je odstraní. Historie nabídek, skryté nabídky, nastavení hlídání a sledovaní prodejci s jejich posledními nabídkami jsou v `data/store.json`; smazáním souboru se vynulují. Oblíbené nabídky, poslední filtry a až 20 uložených hledání jsou v `localStorage` aktuálního prohlížeče. Nejde o trvale synchronizovanou databázi. Uložená nabídka může později zmizet nebo změnit cenu. Klíče jsou jen v `.env`, který je v `.gitignore`. Fotografie se načítají přímo z původních zdrojů.
 
 ## Ověření
 
@@ -88,6 +89,7 @@ Jednotkové a integrační testy ověřují parsování, měny, aukce, filtry, p
 - `src/planner.js`: plán hledání z kategorie, modelu a filtrů.
 - `src/sources.js`, `src/http.js`, `src/parsers.js`: adaptéry, řízené stahování a parsování.
 - `src/matching.js`: filtry, důvody shody, upozornění.
+- `src/sellers.js`: sledovaní prodejci a načítání jejich nabídek.
 - `public/`: samostatné webové rozhraní bez sestavovacího kroku.
 
 Pokud web změní HTML nebo pravidla přístupu, upravuje se jeho adaptér a testy. Aplikace při nerozpoznané struktuře nevydává chybu parseru za nulový počet nabídek.

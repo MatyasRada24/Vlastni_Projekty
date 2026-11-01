@@ -9,6 +9,7 @@ let favorites = readLocal('lovec-favorites', []), searches = readLocal('lovec-se
 if (!Array.isArray(favorites)) favorites = [];
 if (!Array.isArray(searches)) searches = [];
 let job = null, currentSource = 'all', savedView = false, config = {}, polling = null, toastTimer;
+let sellersView = false, sellersState = null;
 let manualPrices = readLocal('lovec-manual-prices', {});
 if (!manualPrices || typeof manualPrices !== 'object' || Array.isArray(manualPrices)) manualPrices = {};
 const editingPrices = new Set(), priceDrafts = new Map(), priceErrors = new Map();
@@ -223,7 +224,7 @@ function renderItems() {
   $('#results-title').innerHTML = `${savedView ? 'Uložené nabídky' : 'Nalezené nabídky'} <span class="count">${items.length}</span>`;
   $('#saved-count').textContent = favorites.length;
   $('#export').disabled = !items.length;
-  $('#nav-search').classList.toggle('active', !savedView); $('#nav-saved').classList.toggle('active', savedView);
+  $('#nav-search').classList.toggle('active', !savedView && !sellersView); $('#nav-saved').classList.toggle('active', savedView && !sellersView);
   if (!items.length) {
     lastResultsKey = '';
     if (!job && !savedView) { $('#results').innerHTML = initialEmptyState; return; }
@@ -234,7 +235,7 @@ function renderItems() {
     return;
   }
   const shown = items.slice(0,displayedLimit);
-  const key = JSON.stringify([shown, favorites.map(x=>x.id),[...editingPrices],[...priceErrors]]);
+  const key = JSON.stringify([shown, favorites.map(x=>x.id),[...editingPrices],[...priceErrors],followedIds()]);
   if (key === lastResultsKey) return;
   lastResultsKey = key;
   patchResults(shown.map(item => {
@@ -243,7 +244,7 @@ function renderItems() {
     return `<article class="listing" data-id="${escapeHtml(item.id)}">
       ${item.image ? `<img class="listing-image" loading="lazy" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" referrerpolicy="no-referrer">` : '<div class="listing-image image-placeholder">Bez fotografie</div>'}
       <div><div class="listing-meta"><span class="source-tag">${escapeHtml(names[item.source])}</span>${historyHtml(item)}<span>·</span><span>${escapeHtml(item.location || 'Lokalita neuvedena')}</span><span>·</span><span>Textová shoda ${item.score}/100</span></div><h3><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a></h3><p class="listing-desc">${escapeHtml(item.description || 'Ve výpisu není podrobný popis.')}</p>${issuesHtml(item)}${hardwareHtml(item)}<div class="reasons">${item.reasons.map(r => `<span class="reason">${escapeHtml(r)}</span>`).join('')}</div><details><summary>Co ještě ověřit (${item.warnings.length})</summary><ul>${item.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>${item.endAt ? `<p>Konec: ${escapeHtml(new Date(item.endAt).toLocaleString('cs-CZ'))}</p>` : ''}</details></div>
-      <div class="listing-price"><span class="price">${item.priceCzk === null ? 'Cena neznámá' : `${item.currency !== 'CZK' ? '≈ ' : ''}${money(item.priceCzk)} Kč`}</span>${item.currency !== 'CZK' && item.price !== null ? `<span class="original-price">${money(item.price)} ${escapeHtml(item.currency)}</span>` : ''}<span class="price-note">${escapeHtml(saleType)}</span>${endHtml(item.endAt)}<span class="price-note">${item.shippingCzk === null ? 'Doprava nezjištěna' : `Doprava od ${money(item.shippingCzk)} Kč`}</span><a class="primary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Otevřít nabídku <span>↗</span></a><div class="card-actions"><button class="bookmark ${saved ? 'saved' : ''}" data-save="${escapeHtml(item.id)}">${saved ? '★ Uloženo' : '☆ Uložit'}</button><button class="bookmark" data-hide="${escapeHtml(item.id)}">${hiddenListings[item.id] ? 'Zrušit skrytí' : 'Skrýt'}</button></div></div>
+      <div class="listing-price"><span class="price">${item.priceCzk === null ? 'Cena neznámá' : `${item.currency !== 'CZK' ? '≈ ' : ''}${money(item.priceCzk)} Kč`}</span>${item.currency !== 'CZK' && item.price !== null ? `<span class="original-price">${money(item.price)} ${escapeHtml(item.currency)}</span>` : ''}<span class="price-note">${escapeHtml(saleType)}</span>${endHtml(item.endAt)}<span class="price-note">${item.shippingCzk === null ? 'Doprava nezjištěna' : `Doprava od ${money(item.shippingCzk)} Kč`}</span><a class="primary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Otevřít nabídku <span>↗</span></a><div class="card-actions"><button class="bookmark ${saved ? 'saved' : ''}" data-save="${escapeHtml(item.id)}">${saved ? '★ Uloženo' : '☆ Uložit'}</button><button class="bookmark" data-hide="${escapeHtml(item.id)}">${hiddenListings[item.id] ? 'Zrušit skrytí' : 'Skrýt'}</button>${followHtml(item)}</div></div>
       ${valuationHtml(item)}
     </article>`;
   }), shown.map(item => item.id));
@@ -364,6 +365,8 @@ $('#results').addEventListener('click', event => {
       .catch(error => showError(error.message));
     return;
   }
+  const follow = event.target.closest('[data-follow-seller]');
+  if (follow) { void followSeller(follow.dataset.followSource, follow.dataset.followSeller, follow); return; }
   const button = event.target.closest('[data-save]'); if (!button) return;
   const id = button.dataset.save;
   if (favorites.some(x => x.id === id)) favorites = favorites.filter(x => x.id !== id);
@@ -391,8 +394,81 @@ $('#results').addEventListener('submit', event => {
     manualPrices=next;editingPrices.delete(id);priceDrafts.delete(id);priceErrors.delete(id);renderItems();toast('Tvoje cena je uložená. Výpočet, řazení i export ji používají.');
   } catch(error) {priceErrors.set(id,error.message);form.querySelector('.manual-error').textContent=error.message;}
 });
-$('#nav-search').addEventListener('click', () => { savedView = false; renderItems(); });
-$('#nav-saved').addEventListener('click', () => { savedView = true; renderItems(); });
+$('#nav-search').addEventListener('click', () => { showSellers(false); savedView = false; renderItems(); });
+$('#nav-saved').addEventListener('click', () => { showSellers(false); savedView = true; renderItems(); });
+
+// Followed sellers: the server keeps their offers and checks them again when they are older than 30 minutes.
+// Offers marked new when the view opened keep the mark until the view is left, although the server already counts them as seen.
+const followedIds = () => (sellersState?.sellers ?? []).map(s => s.id);
+const sellerId = (source, login) => `${source}:${String(login).toLowerCase()}`;
+function followHtml(item) {
+  if (!item.seller || !['aukro','ebay'].includes(item.source)) return '';
+  return followedIds().includes(sellerId(item.source, item.seller)) ? `<button class="bookmark" disabled>✓ Sleduješ ${escapeHtml(item.seller)}</button>`
+    : `<button class="bookmark" data-follow-source="${escapeHtml(item.source)}" data-follow-seller="${escapeHtml(item.seller)}" title="Prodejce ${escapeHtml(item.seller)}">+ Sledovat prodejce</button>`;
+}
+let sellerHighlights = new Set(), sellerLimit = 120, sellerPoll = null;
+const rateFor = currency => currency === 'CZK' ? 1 : ({ USD:Number($('#usd-rate').value), EUR:Number($('#eur-rate').value), GBP:Number($('#gbp-rate').value) }[currency] || null);
+const offerCzk = offer => offer.price == null || !rateFor(offer.currency) ? null : Math.round(offer.price * rateFor(offer.currency));
+function renderSellers(state) {
+  sellersState = state;
+  const unseen = state.newCount;
+  $('#sellers-count').hidden = !unseen; $('#sellers-count').textContent = unseen;
+  if (!sellersView) { lastResultsKey = ''; renderItems(); return; }
+  for (const offer of state.offers) if (offer.isNew || offer.isCheaper) sellerHighlights.add(offer.id);
+  const filter = $('#seller-filter').value;
+  $('#seller-filter').innerHTML = '<option value="">Všichni prodejci</option>' + state.sellers.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.login)} · ${escapeHtml(names[s.source])}</option>`).join('');
+  $('#seller-filter').value = state.sellers.some(s => s.id === filter) ? filter : '';
+  $('#seller-list').innerHTML = state.sellers.map(s => `<div class="seller-chip" data-error="${Boolean(s.error)}"><div><a href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.login)} ↗</a><small>${escapeHtml(names[s.source])} · ${s.checkedAt ? `${s.count}${s.total > s.count ? ` z ${s.total}` : ''} nabídek · ${timeText(s.checkedAt)}` : 'načítám…'}${s.newCount ? ` · <b>${s.newCount} nových</b>` : ''}</small>${s.error ? `<small class="seller-error">${escapeHtml(s.error)}</small>` : ''}</div><button type="button" class="quiet-button" data-unfollow="${escapeHtml(s.id)}" aria-label="Přestat sledovat ${escapeHtml(s.login)}">✕</button></div>`).join('');
+  const sort = $('#seller-sort').value, onlyNew = $('#seller-only-new').checked;
+  const offers = state.offers.filter(o => (!filter || o.sellerId === filter) && (!onlyNew || sellerHighlights.has(o.id))).map(o => ({ ...o, czk:offerCzk(o), highlighted:sellerHighlights.has(o.id) }))
+    .sort((a,b) => sort === 'price' ? (a.czk ?? Infinity) - (b.czk ?? Infinity) : sort === 'price-desc' ? (b.czk ?? -Infinity) - (a.czk ?? -Infinity)
+      : sort === 'ending' ? (a.endAt ? Date.parse(a.endAt) : Infinity) - (b.endAt ? Date.parse(b.endAt) : Infinity)
+      : Number(b.highlighted) - Number(a.highlighted) || b.firstSeen.localeCompare(a.firstSeen));
+  $('#sellers-offer-count').textContent = offers.length;
+  $('#sellers-status').textContent = state.refreshing ? 'Načítám nabídky prodejců…' : state.sellers.length ? `${state.offers.length} nabídek od ${state.sellers.length} prodejců` : '';
+  $('#sellers-refresh').disabled = state.refreshing || !state.sellers.length;
+  const saleTypes = { auction:'Aukce', fixed:'Kup teď', classified:'Inzerát', unknown:'' };
+  $('#seller-offers').innerHTML = !state.sellers.length ? '<div class="empty"><h3>Zatím nesleduješ žádného prodejce.</h3><p>Vlož odkaz na prodejce, nebo u nalezené nabídky z Aukra či eBay klikni na „Sledovat prodejce“.</p></div>'
+    : !offers.length ? `<div class="empty"><h3>${state.refreshing ? 'Načítám nabídky…' : 'Žádné nabídky k zobrazení.'}</h3></div>`
+    : offers.slice(0, sellerLimit).map(o => `<article class="seller-offer">${o.image ? `<img loading="lazy" src="${escapeHtml(o.image)}" alt="" referrerpolicy="no-referrer">` : '<div class="image-placeholder">Bez fotografie</div>'}<div class="seller-offer-body"><div class="listing-meta"><span class="source-tag">${escapeHtml(names[o.source])}</span><span>${escapeHtml(o.seller)}</span>${o.highlighted ? (o.previousPrice != null && !o.isNew ? `<span class="history-tag down">Zlevněno z ${money(o.previousPrice)} ${escapeHtml(o.currency)}</span>` : '<span class="history-tag new">Nové</span>') : ''}</div><h3><a href="${escapeHtml(o.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(o.title)}</a></h3><div class="seller-offer-price"><strong>${o.czk == null ? 'Cena neznámá' : `${o.currency !== 'CZK' ? '≈ ' : ''}${money(o.czk)} Kč`}</strong>${o.currency !== 'CZK' && o.price != null ? `<span class="original-price">${money(o.price)} ${escapeHtml(o.currency)}</span>` : ''}<span class="price-note">${[saleTypes[o.saleType], o.endAt ? `do ${timeText(o.endAt)}` : ''].filter(Boolean).join(' · ')}</span></div></div></article>`).join('');
+  $('#seller-more').hidden = offers.length <= sellerLimit;
+  $('#seller-more').textContent = `Zobrazit další · nyní ${Math.min(offers.length, sellerLimit)} z ${offers.length}`;
+  clearTimeout(sellerPoll);
+  if (state.refreshing) sellerPoll = setTimeout(refreshSellers, 3000);
+}
+async function refreshSellers() { try { renderSellers(await api('/api/sellers')); } catch {} }
+async function showSellers(open) {
+  if (sellersView === open) return;
+  sellersView = open; sellerHighlights = new Set(); sellerLimit = 120;
+  $('#main').classList.toggle('sellers-mode', open); $('#sellers-view').hidden = !open; $('#nav-sellers').classList.toggle('active', open);
+  if (!open) return;
+  $('#nav-search').classList.remove('active'); $('#nav-saved').classList.remove('active');
+  await refreshSellers();
+  if (sellersState?.newCount) { try { const state = await api('/api/sellers/seen', { method:'POST', body:'{}' }); sellersState = state; $('#sellers-count').hidden = true; } catch {} }
+}
+async function followSeller(source, input, button) {
+  if (button) button.disabled = true;
+  if (sellersView) $('#sellers-status').textContent = 'Přidávám prodejce a načítám jeho nabídky…';
+  try { renderSellers(await api('/api/sellers', { method:'POST', body:JSON.stringify(source ? { source, input } : { input }) })); toast('Prodejce sleduješ. Jeho nabídky najdeš v záložce Obchodníci.'); return true; }
+  catch (error) { toast(error.message); if (button) button.disabled = false; return false; }
+}
+$('#nav-sellers').addEventListener('click', () => { void showSellers(true); });
+$('#seller-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const input = $('#seller-input').value.trim(), submit = event.target.querySelector('[type=submit]');
+  if (!input) return;
+  submit.disabled = true;
+  // A pasted link names its web itself; the select only applies to a bare name.
+  if (await followSeller(/^(?:https?:\/\/|www\.)|\.(?:cz|com)\b/i.test(input) ? null : $('#seller-source').value, input)) $('#seller-input').value = '';
+  submit.disabled = false;
+});
+$('#seller-list').addEventListener('click', async event => {
+  const button = event.target.closest('[data-unfollow]'); if (!button) return;
+  try { renderSellers(await api('/api/sellers/remove', { method:'POST', body:JSON.stringify({ id:button.dataset.unfollow }) })); toast('Prodejce už nesleduješ.'); } catch (error) { toast(error.message); }
+});
+$('#sellers-refresh').addEventListener('click', async () => { try { renderSellers(await api('/api/sellers/refresh', { method:'POST', body:'{}' })); } catch (error) { toast(error.message); } });
+for (const id of ['#seller-filter','#seller-sort','#seller-only-new']) $(id).addEventListener('change', () => { sellerLimit = 120; if (sellersState) renderSellers(sellersState); });
+$('#seller-more').addEventListener('click', () => { sellerLimit += 120; renderSellers(sellersState); });
 async function applyCnbRates() {
   const manual = !$('#use-cnb').checked;
   document.querySelectorAll('.rate-grid input[id$=-rate]').forEach(input => { input.readOnly = !manual; });
@@ -452,6 +528,7 @@ $('#watch-start').addEventListener('click', () => saveWatch(true));
 $('#watch-stop').addEventListener('click', () => saveWatch(false));
 $('#watch-clear').addEventListener('click', async () => { try { renderWatch(await api('/api/watch/clear', { method:'POST', body:'{}' })); } catch (error) { showError(error.message); } });
 setInterval(refreshWatch, 60000);
+setInterval(refreshSellers, 60000);
 $('#save-settings').addEventListener('click', () => { { writeLocal('lovec-rates', { useCnb: $('#use-cnb').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value) }); costs = readCosts(); writeLocal('lovec-costs', costs); lastResultsKey = ''; renderItems(); toast('Náklady jsou přepočítané. Kurzy se použijí při příštím hledání.'); } });
 function renderSearches() { $('#saved-searches').innerHTML = '<option value="">Vyber uložené…</option>' + searches.map((s,i) => `<option value="${i}">${escapeHtml(searchName(s))}</option>`).join(''); }
 $('#save-search').addEventListener('click', () => { const data = filters(); searches = [data, ...searches.filter(s => JSON.stringify(s) !== JSON.stringify(data))].slice(0,20); writeLocal('lovec-searches', searches); renderSearches(); toast('Hledání uloženo v prohlížeči.'); });
@@ -474,6 +551,7 @@ try {
   $('#use-cnb').checked = rates?.useCnb ?? true;
   try { hiddenListings = await api('/api/hidden'); } catch {}
   void refreshWatch();
+  void refreshSellers();
   void applyCnbRates();
   renderSearches(); $('#saved-count').textContent = favorites.length;
   const activeId = readLocal('lovec-active-job', null);
