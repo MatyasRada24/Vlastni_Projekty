@@ -51,6 +51,22 @@
               <label data-for="laptops desktops phones">RAM alespoň · GB<input id="min-ram" type="number" min="1" max="256" placeholder="Bez minima"></label>
               <label data-for="laptops desktops phones"><span id="storage-label">SSD alespoň · GB</span><input id="min-storage" type="number" min="1" max="32000" placeholder="Bez minima"></label>
               <label data-for="laptops">VRAM alespoň · GB<input id="min-vram" type="number" min="1" max="48" placeholder="Bez minima"></label>
+              <label data-kind="ssd">Rozhraní<select id="part-interface"><option value="">Jakékoli</option><option value="sata">SATA · 2,5″</option><option value="m2">M.2 · NVMe i SATA</option><option value="nvme">M.2 NVMe · PCIe</option><option value="m2sata">M.2 SATA</option></select></label>
+              <label data-kind="ssd ram">Kapacita alespoň · GB<input id="part-capacity" type="number" min="1" max="32000" placeholder="Bez minima"></label>
+              <label data-kind="ssd">Rychlost čtení alespoň · MB/s<input id="part-read" type="number" min="1" max="20000" placeholder="Např. 3000"></label>
+              <label data-kind="ssd">Výdrž alespoň · TBW<input id="part-tbw" type="number" min="1" max="100000" placeholder="Např. 600"></label>
+              <label data-kind="ssd">Zdraví disku alespoň · %<input id="part-health" type="number" min="1" max="100" placeholder="Např. 90"></label>
+              <label data-kind="gpu cpu">Výrobce čipu<select id="part-chip"><option value="">Všichni</option><option value="nvidia">NVIDIA</option><option value="amd">AMD</option><option value="intel">Intel</option></select></label>
+              <label data-kind="gpu">VRAM alespoň · GB<input id="part-vram" type="number" min="1" max="48" placeholder="Bez minima"></label>
+              <label data-kind="cpu mb">Patice<select id="part-socket"><option value="">Jakákoli</option><optgroup label="AMD"><option>AM5</option><option>AM4</option><option>AM3</option><option>FM2</option><option>TR4</option><option value="STRX4">sTRX4</option></optgroup><optgroup label="Intel"><option>LGA1851</option><option>LGA1700</option><option>LGA1200</option><option>LGA1151</option><option>LGA1150</option><option>LGA1155</option><option>LGA1156</option><option>LGA2066</option><option>LGA2011</option><option>LGA775</option></optgroup></select></label>
+              <label data-kind="cpu">Jader alespoň<input id="part-cores" type="number" min="1" max="128" placeholder="Bez minima"></label>
+              <label data-kind="ram mb">Typ paměti<select id="part-mem"><option value="">Jakýkoli</option><option value="ddr5">DDR5</option><option value="ddr4">DDR4</option><option value="ddr3">DDR3</option><option value="ddr2">DDR2</option></select></label>
+              <label data-kind="ram">Provedení<select id="part-ram-form"><option value="">Jakékoli</option><option value="dimm">DIMM · stolní PC</option><option value="sodimm">SO-DIMM · notebook</option></select></label>
+              <label data-kind="ram">Frekvence alespoň · MHz<input id="part-mhz" type="number" min="1" max="12000" placeholder="Např. 3200"></label>
+              <label data-kind="psu">Výkon alespoň · W<input id="part-watts" type="number" min="1" max="3000" placeholder="Např. 650"></label>
+              <label data-kind="psu">Certifikace alespoň<select id="part-efficiency"><option value="">Jakákoli</option><option value="white">80 PLUS</option><option value="bronze">Bronze</option><option value="silver">Silver</option><option value="gold">Gold</option><option value="platinum">Platinum</option><option value="titanium">Titanium</option></select></label>
+              <label data-kind="psu">Modularita<select id="part-modular"><option value="">Jakákoli</option><option value="semi">Alespoň polomodulární</option><option value="full">Plně modulární</option></select></label>
+              <label data-kind="mb">Formát desky<select id="part-board"><option value="">Jakýkoli</option><option value="eatx">E-ATX</option><option value="atx">ATX</option><option value="matx">Micro-ATX</option><option value="itx">Mini-ITX</option></select></label>
               <label data-for="laptops">Požadovaný hrubý rozdíl · Kč<input id="target-profit" type="number" min="0" max="10000000" value="0" required></label>
               <label data-for="laptops">Ověřit cen nových modelů · 1–200<input id="price-lookup-limit" type="number" min="1" max="200" value="30" required></label>
             </div>

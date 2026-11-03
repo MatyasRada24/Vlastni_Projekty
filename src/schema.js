@@ -17,6 +17,17 @@ export const categories = {
 const categoryOf = value => Object.hasOwn(categories, value) ? value : value === 'graphics' ? 'gpu' : 'laptops';
 
 const words = z.array(z.string().trim().min(1).max(80)).max(20);
+const minimum = max => z.number().int().min(1).max(max).nullable().default(null);
+// Component parameters; each kind checks only its own (see parts.js).
+const partSchema = z.object({
+  interface: z.enum(['', 'sata', 'nvme', 'm2sata', 'm2']).default(''),
+  minCapacityGb: minimum(32000), minReadMbs: minimum(20000), minTbw: minimum(100000), minHealth: minimum(100),
+  chip: z.enum(['', 'nvidia', 'amd', 'intel']).default(''), minVramGb: minimum(48),
+  socket: z.enum(['', 'AM3','AM4','AM5','FM2','LGA775','LGA1150','LGA1151','LGA1155','LGA1156','LGA1200','LGA1700','LGA1851','LGA2011','LGA2066','TR4','STRX4']).default(''), minCores: minimum(128),
+  memType: z.enum(['', 'ddr2', 'ddr3', 'ddr4', 'ddr5']).default(''), ramForm: z.enum(['', 'dimm', 'sodimm']).default(''), minMhz: minimum(12000),
+  minWatts: minimum(3000), efficiency: z.enum(['', 'white', 'bronze', 'silver', 'gold', 'platinum', 'titanium']).default(''), modular: z.enum(['', 'semi', 'full']).default(''),
+  boardForm: z.enum(['', 'eatx', 'atx', 'matx', 'itx']).default(''),
+}).default({});
 export const searchSchema = z.object({
   // The optional model; empty browses the whole category.
   prompt: z.string().trim().max(600).default(''),
@@ -35,6 +46,7 @@ export const searchSchema = z.object({
   minRamGb: z.number().int().min(1).max(256).nullable().default(null),
   minStorageGb: z.number().int().min(1).max(32000).nullable().default(null),
   minVramGb: z.number().int().min(1).max(48).nullable().default(null),
+  part: partSchema,
   includeUnknownSpecs: z.boolean().default(false),
   lookupNewPrices: z.boolean().default(true),
   priceSources: z.array(z.enum(['mironet','k24'])).min(1).max(2).transform(v => [...new Set(v)]).default(['mironet','k24']),
