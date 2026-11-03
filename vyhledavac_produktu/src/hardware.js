@@ -233,12 +233,19 @@ const vramPatterns = [
   /\bvram\s*[:=-]?\s*(\d{1,2})\s*gb\b/g,
   /\b(?:vlastni|dedikovan\w*|graficke|video)\s+(?:pamet\w*\s*[:=-]?\s*)?(\d{1,2})\s*gb\b/g,
 ];
-function vramOf(title, description, specs) {
+// VRAM written next to the GPU or as "VRAM"/"GDDR6"; undefined when neither text states any.
+function vramFromText(title, description) {
   for (const text of [title, description]) {
     const sizes = [...new Set(vramPatterns.flatMap(re => [...text.matchAll(re)].map(m => +m[1])).filter(n => n >= 1 && n <= 48))];
     if (sizes.length === 1) return sizes[0];
     if (sizes.length > 1) return null;
   }
+  return undefined;
+}
+export const statedVram = item => vramFromText(prepare(item.title ?? ''), prepare(item.description ?? ''));
+function vramOf(title, description, specs) {
+  const stated = vramFromText(title, description);
+  if (stated !== undefined) return stated;
   if (!specs.gpu) return integratedChip(specs) ? 0 : null;
   if (/^MX/.test(specs.gpu)) return 2;
   // Integrated graphics (Iris Xe, Radeon Graphics, UHD) share system memory.
@@ -270,7 +277,7 @@ const phoneCached = memo(key => {
 }, 10000);
 export const extractPhone = item => ({ ...phoneCached(`${item.title ?? ''}\u0000${item.description ?? ''}`) });
 
-// Parameters the form offers per category. Components are filtered by kind (the category) and price only.
+// Parameters the form offers per category. Components have their own parameters in parts.js.
 const filterKeys = { laptops: ['brand','ramGb','storageGb','vramGb'], desktops: ['cpu','gpu','ramGb','storageGb'], phones: ['brand','ramGb','storageGb'] };
 export const specsFor = (item, category) => category === 'phones' ? extractPhone(item) : category === 'laptops' || category === 'desktops' ? extractHardware(item) : null;
 

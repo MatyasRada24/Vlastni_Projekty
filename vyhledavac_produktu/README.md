@@ -18,6 +18,8 @@ Otevři **http://127.0.0.1:3210**. Bez klíčů fungují Bazoš a Aukro. Server 
 
 Hledání je vždy kategorie a nepovinný model. Bez modelu se projde celá kategorie; s modelem musí inzerát obsahovat každou jeho část („RTX 4080“ odpovídá i „RTX4080 SUPER“, ne „RTX 4070 Ti, vyměním za 4080“). Model se zároveň hledá textem na Aukru a eBay; Bazoš vyhledávání zakazuje, takže prochází kategorii (u telefonů sekci značky). Stav (na opravu / jakýkoliv), cena a parametry kategorie se nastavují jen ve filtrech, nic se nevyvozuje z volného textu.
 
+Komponenty mají vlastní parametry: SSD rozhraní (SATA, M.2 NVMe, M.2 SATA), kapacitu, rychlost čtení, výdrž v TBW a zdraví disku; GPU výrobce čipu a VRAM; CPU výrobce, patici a počet jader; RAM typ, provedení (DIMM / SO-DIMM), kapacitu a frekvenci; zdroj výkon, certifikaci 80 PLUS a modularitu; základní deska patici, typ paměti a formát. Hodnoty se čtou z názvu, jinak z popisu; patice procesoru se odvodí i z generace (i5-12400 → LGA1700) a desky z čipsetu (B550 → AM4). Rozsahy z parametrů Aukra („550 - 649 W“) se nepočítají jako hodnota. Inzerát bez dané hodnoty projde jen se zapnutým „Pustit i neznámé vybrané parametry“.
+
 ### eBay
 
 Používá [oficiální Browse API](https://developer.ebay.com/api-docs/buy/static/api-browse.html), marketplace `EBAY_US`, kategorii a anglický dotaz. Pro poškozené zboží používá `conditionIds:{7000}`. Aukce zobrazuje jako aktuální příhoz; u nabídky s možností Buy It Now používá pevnou cenu.
@@ -90,6 +92,7 @@ Jednotkové a integrační testy ověřují parsování, měny, aukce, filtry, p
 - `src/sources.js`, `src/http.js`, `src/parsers.js`: adaptéry, řízené stahování a parsování.
 - `src/matching.js`: filtry, důvody shody, upozornění.
 - `src/sellers.js`: sledovaní prodejci a načítání jejich nabídek.
+- `src/parts.js`: parametry komponent (SSD, GPU, CPU, RAM, zdroj, deska) a jejich filtry.
 - `public/`: samostatné webové rozhraní bez sestavovacího kroku.
 
 Pokud web změní HTML nebo pravidla přístupu, upravuje se jeho adaptér a testy. Aplikace při nerozpoznané struktuře nevydává chybu parseru za nulový počet nabídek.

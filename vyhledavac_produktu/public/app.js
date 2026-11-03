@@ -42,7 +42,7 @@ async function api(url, options = {}) {
 const terms = id => $(id).value.split(',').map(x => x.trim()).filter(Boolean);
 const price = id => $(id).value.trim() === '' ? null : Number($(id).value);
 function filters() {
-  return { prompt: $('#prompt').value.trim(), sources: [...document.querySelectorAll('[name=source]:checked')].map(x => x.value), category: searchCategory(), condition: $('#condition').value, minPrice: price('#min-price'), maxPrice: price('#max-price'), includeTerms: terms('#include'), excludeTerms: terms('#exclude'), location: $('#location').value.trim(), region: $('#region').value, pages: Number($('#pages').value), detailLimit: Number($('#detail-limit').value), includeAuctions: $('#auctions').checked, includeUnknownPrice: $('#unknown-price').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value), brand:$('#brand').value, cpu:$('#cpu').value.trim(), gpu:$('#gpu').value.trim(), minRamGb:price('#min-ram'), minStorageGb:price('#min-storage'), minVramGb:price('#min-vram'), includeUnknownSpecs:$('#unknown-specs').checked, lookupNewPrices:$('#lookup-prices').checked, priceLookupLimit:Number($('#price-lookup-limit').value), targetProfit:Number($('#target-profit').value), priceSources:[...document.querySelectorAll('[name=price-source]:checked')].map(x => x.value) };
+  return { prompt: $('#prompt').value.trim(), sources: [...document.querySelectorAll('[name=source]:checked')].map(x => x.value), category: searchCategory(), condition: $('#condition').value, minPrice: price('#min-price'), maxPrice: price('#max-price'), includeTerms: terms('#include'), excludeTerms: terms('#exclude'), location: $('#location').value.trim(), region: $('#region').value, pages: Number($('#pages').value), detailLimit: Number($('#detail-limit').value), includeAuctions: $('#auctions').checked, includeUnknownPrice: $('#unknown-price').checked, usdRate: Number($('#usd-rate').value), eurRate: Number($('#eur-rate').value), gbpRate: Number($('#gbp-rate').value), brand:$('#brand').value, cpu:$('#cpu').value.trim(), gpu:$('#gpu').value.trim(), minRamGb:price('#min-ram'), minStorageGb:price('#min-storage'), minVramGb:price('#min-vram'), part:partFilters(), includeUnknownSpecs:$('#unknown-specs').checked, lookupNewPrices:$('#lookup-prices').checked, priceLookupLimit:Number($('#price-lookup-limit').value), targetProfit:Number($('#target-profit').value), priceSources:[...document.querySelectorAll('[name=price-source]:checked')].map(x => x.value) };
 }
 // Components are one choice in the form; the server searches each kind as its own category.
 const componentKinds = ['ram','cpu','gpu','ssd','psu','mb'];
@@ -54,7 +54,22 @@ const parameterTexts = {
   laptops: ['Parametry notebooku a ocenění', 'Výrobce, RAM, SSD, VRAM a cenové zdroje'],
   desktops: ['Parametry počítače', 'RAM, procesor, grafika a SSD'],
   phones: ['Parametry telefonu', 'Výrobce, RAM a úložiště'],
+  ssd: ['Parametry SSD', 'Rozhraní, kapacita, rychlost, výdrž a zdraví'],
+  gpu: ['Parametry grafické karty', 'Výrobce čipu a VRAM'],
+  cpu: ['Parametry procesoru', 'Výrobce, patice a počet jader'],
+  ram: ['Parametry RAM', 'Typ, provedení, kapacita a frekvence'],
+  psu: ['Parametry zdroje', 'Výkon, certifikace a modularita'],
+  mb: ['Parametry základní desky', 'Patice, typ paměti a formát'],
 };
+// Component parameters: [filter key, field id, number or select, label in the "Aktivní:" summary].
+const partFields = [
+  ['interface','part-interface','select','Rozhraní'], ['minCapacityGb','part-capacity','number','Kapacita ≥ {} GB'], ['minReadMbs','part-read','number','Čtení ≥ {} MB/s'],
+  ['minTbw','part-tbw','number','Výdrž ≥ {} TBW'], ['minHealth','part-health','number','Zdraví ≥ {} %'], ['chip','part-chip','select','Čip'], ['minVramGb','part-vram','number','VRAM ≥ {} GB'],
+  ['socket','part-socket','select','Patice'], ['minCores','part-cores','number','Jader ≥ {}'], ['memType','part-mem','select','Paměť'], ['ramForm','part-ram-form','select','Provedení'],
+  ['minMhz','part-mhz','number','≥ {} MHz'], ['minWatts','part-watts','number','Výkon ≥ {} W'], ['efficiency','part-efficiency','select','Certifikace'], ['modular','part-modular','select','Modularita'],
+  ['boardForm','part-board','select','Formát'],
+];
+const partFilters = () => Object.fromEntries(partFields.map(([key,id,type]) => [key, type === 'number' ? price(`#${id}`) : $(`#${id}`).value]));
 const searchCategory = () => $('#category').value === 'components' ? $('#component').value : $('#category').value;
 // Every search is a category plus an optional model; each category remembers its own model text.
 const categoryLabel = id => componentKinds.includes(id) ? `Komponenty · ${$('#component').querySelector(`option[value="${id}"]`)?.textContent ?? id}` : $('#category').querySelector(`option[value="${id}"]`)?.textContent ?? id;
@@ -69,10 +84,10 @@ function applyPromptMode() {
 function applyCategory(brand = $('#brand').value) {
   applyPromptMode();
   const category = $('#category').value;
+  const kind = category === 'components' ? $('#component').value : null;
   document.querySelectorAll('[data-for]').forEach(el => { el.hidden = !el.dataset.for.split(' ').includes(category); });
-  // Components are filtered by kind and price only, so their parameter section disappears.
-  $('#parameters').hidden = category === 'components';
-  const [title] = parameterTexts[category] ?? parameterTexts.laptops;
+  document.querySelectorAll('[data-kind]').forEach(el => { el.hidden = !el.dataset.kind.split(' ').includes(kind); });
+  const [title] = parameterTexts[kind ?? category] ?? parameterTexts.laptops;
   $('#parameters-title').textContent = title;
   $('#storage-label').textContent = category === 'phones' ? 'Úložiště alespoň · GB' : 'SSD alespoň · GB';
   $('#brand').innerHTML = `<option value="">Všichni výrobci</option>${(brandOptions[category] ?? []).map(([value,label]) => `<option value="${value}">${label}</option>`).join('')}`;
@@ -88,13 +103,14 @@ function showActiveFilters() {
     value('#cpu') && `Procesor ${value('#cpu')}`, value('#gpu') && `Grafika ${value('#gpu')}`,
     value('#min-ram') && `RAM ≥ ${value('#min-ram')} GB`, value('#min-storage') && `${$('#storage-label').textContent.split(' ')[0]} ≥ ${value('#min-storage')} GB`,
     value('#min-vram') && `VRAM ≥ ${value('#min-vram')} GB`,
+    ...partFields.map(([,id,type,label]) => value(`#${id}`) && (type === 'select' ? `${label} ${$(`#${id}`).selectedOptions[0].textContent}` : label.replace('{}', value(`#${id}`)))),
   ].filter(Boolean);
   const more = [
     value('#include') && `Musí obsahovat ${value('#include')}`, value('#exclude') && `Nesmí obsahovat ${value('#exclude')}`,
     value('#location') && `Lokalita ${value('#location')}`, value('#region') && `Kraj ${$('#region').selectedOptions[0].textContent}`,
   ].filter(Boolean);
   const hint = (id, active, fallback) => { $(id).textContent = active.length ? `Aktivní: ${active.join(' · ')}` : fallback; $(id).classList.toggle('active-filters', active.length > 0); };
-  hint('#parameters-hint', parameters, (parameterTexts[$('#category').value] ?? parameterTexts.laptops)[1]);
+  hint('#parameters-hint', parameters, (parameterTexts[searchCategory()] ?? parameterTexts.laptops)[1]);
   hint('#more-hint', more, 'Výrazy, lokalita, aukce a popisy');
 }
 function restoreFilters(data) {
@@ -106,6 +122,7 @@ function restoreFilters(data) {
   applyCategory(data.brand ?? '');
   $('#detail-limit').value = data.detailLimit ?? 60;
   for (const [key,id,fallback] of [['cpu','cpu',''],['gpu','gpu',''],['minRamGb','min-ram',''],['minStorageGb','min-storage',''],['minVramGb','min-vram',''],['targetProfit','target-profit',0],['priceLookupLimit','price-lookup-limit',30]]) $(`#${id}`).value = data[key] ?? fallback;
+  for (const [key,id] of partFields) $(`#${id}`).value = data.part?.[key] ?? '';
   $('#unknown-specs').checked = data.includeUnknownSpecs ?? false;
   $('#lookup-prices').checked = data.lookupNewPrices ?? true;
   document.querySelectorAll('[name=price-source]').forEach(input => {input.checked = (data.priceSources ?? ['mironet','k24']).includes(input.value);});
@@ -170,9 +187,20 @@ function issuesHtml(item) {
 function hardwareHtml(item) {
   if (!item.specs) return '';
   const specs = item.specs, gb = value => value == null ? null : `${value} GB`;
-  const rows = specs.kind === 'phone' ? [['Výrobce',specs.brand],['RAM',gb(specs.ramGb)],['Úložiště',gb(specs.storageGb)]]
+  const unit = (value, suffix) => value == null ? null : `${value}${suffix}`, upper = value => value?.toUpperCase();
+  const partNames = { sata:'SATA 2,5″', nvme:'M.2 NVMe', m2sata:'M.2 SATA', m2:'M.2', nvidia:'NVIDIA', amd:'AMD', intel:'Intel', dimm:'DIMM', sodimm:'SO-DIMM', white:'80 PLUS', bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum', titanium:'Titanium', full:'Plně', semi:'Polomodulární', modular:'Modulární', none:'Ne', eatx:'E-ATX', atx:'ATX', matx:'Micro-ATX', itx:'Mini-ITX' };
+  const label = value => partNames[value] ?? value;
+  const parts = {
+    ssd: [['Rozhraní',label(specs.interface)],['Kapacita',gb(specs.capacityGb)],['Čtení',unit(specs.readMbs,' MB/s')],['Výdrž',unit(specs.tbw,' TBW')],['Zdraví',unit(specs.healthPct,' %')]],
+    gpu: [['Čip',label(specs.chip)],['VRAM',gb(specs.vramGb)]],
+    cpu: [['Výrobce',label(specs.chip)],['Patice',specs.socket],['Jádra',specs.cores]],
+    ram: [['Typ',upper(specs.memType)],['Provedení',label(specs.form)],['Kapacita',gb(specs.capacityGb)],['Frekvence',unit(specs.mhz,' MHz')]],
+    psu: [['Výkon',unit(specs.watts,' W')],['Certifikace',label(specs.efficiency)],['Modulární',label(specs.modular)]],
+    mb: [['Patice',specs.socket],['Paměť',upper(specs.memType)],['Formát',label(specs.form)]],
+  };
+  const rows = parts[specs.kind] ?? (specs.kind === 'phone' ? [['Výrobce',specs.brand],['RAM',gb(specs.ramGb)],['Úložiště',gb(specs.storageGb)]]
     : item.category === 'desktops' ? [['CPU',specs.cpu],['GPU',specs.gpu],['RAM',gb(specs.ramGb)],['Disk',specs.storageGb == null ? null : `${specs.storageGb} GB ${specs.storageType ?? ''}`]]
-    : [['Model',specs.model || specs.sku],['CPU',specs.cpu],['GPU',specs.gpu],['VRAM',gb(specs.vramGb)],['RAM',gb(specs.ramGb)],['Disk',specs.storageGb == null ? null : `${specs.storageGb} GB ${specs.storageType ?? ''}`]];
+    : [['Model',specs.model || specs.sku],['CPU',specs.cpu],['GPU',specs.gpu],['VRAM',gb(specs.vramGb)],['RAM',gb(specs.ramGb)],['Disk',specs.storageGb == null ? null : `${specs.storageGb} GB ${specs.storageType ?? ''}`]]);
   return `<dl class="specs">${rows.map(([label,value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value ?? 'Neznámé')}</dd></div>`).join('')}</dl>${specs.ambiguous?.length ? '<p class="price-note">Některé údaje v popisu si odporují nebo uvádějí více variant; zůstávají neznámé.</p>' : ''}`;
 }
 
@@ -328,7 +356,7 @@ $('#search-form').addEventListener('submit', async event => {
 $('#cancel-button').addEventListener('click', async () => { if (!job) return; try { await api(`/api/search/${job.id}/cancel`, { method:'POST', body:'{}' }); toast('Zastavuji vyhledávání…'); } catch(e) { showError(e.message); } });
 $('#source-tabs').addEventListener('click', event => { const tab = event.target.closest('[data-source]'); if (!tab) return; currentSource = tab.dataset.source; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === tab)); renderItems(); });
 $('#category').addEventListener('change', () => applyCategory());
-$('#component').addEventListener('change', applyPromptMode);
+$('#component').addEventListener('change', () => applyCategory());
 $('#search-form').addEventListener('input', showActiveFilters);
 $('#search-form').addEventListener('change', showActiveFilters);
 $('#sort').addEventListener('change', renderItems);

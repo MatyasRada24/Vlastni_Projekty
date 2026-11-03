@@ -1,6 +1,7 @@
 import { normalize, memo, categories } from './schema.js';
 import { hasTerm, groupMatches, productGroups } from './vocabulary.js';
-import { specsFor, hardwareMatches, extractHardware } from './hardware.js';
+import { specsFor as deviceSpecs, hardwareMatches as deviceMatches, extractHardware } from './hardware.js';
+import { extractPart, partMatches } from './parts.js';
 import { classifyListing } from './defects.js';
 import { regionOf } from './regions.js';
 
@@ -65,6 +66,10 @@ export function isWholeDevice(item, plan) {
   const specs = extractHardware({ title: item.title, description: '' });
   return Boolean(specs.cpu && specs.ramGb && specs.storageGb);
 }
+
+// Devices (notebooks, PCs, phones) and components each read and check their own parameters.
+const specsFor = (item, category) => extractPart(item, category) ?? deviceSpecs(item, category);
+const hardwareMatches = (specs, filters, category) => specs?.kind && specs.kind !== 'phone' ? partMatches(specs, filters.part, category, filters.includeUnknownSpecs) : deviceMatches(specs, filters, category);
 
 // "Koupím iPhone na díly" is a buyer's request, not an offer.
 const wantedAd = /^(?:koupim|vykoupim|vykup|shanim|hledam|poptavam|poptavka|wanted|buying)\b/;
